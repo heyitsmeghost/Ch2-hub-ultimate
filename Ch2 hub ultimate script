@@ -1,0 +1,4285 @@
+--[[
+    CH2 HUB ULTIMATE EDITION
+    COMPLETE SINGLE LOCALSCRIPT
+    PURE ROBLOX LUAU
+
+    CONTROLS
+      L = Toggle Hub
+      G = Bring All
+      R = Switch CH2 Hub / GRANNY RETRO HUB
+
+    CH2 INDIVIDUAL ITEM KEYS
+      1 = Spark Plug
+      2 = Gasoline can
+      3 = Boat Steering Wheel
+      4 = PadLock Key
+      5 = Boat Key
+      7 = Security key
+      8 = Crowbar
+      9 = Cutting pliers
+      0 = Safe Key
+      Y = Hand Wheel
+      U = Door Handle
+
+    GRANNY RETRO HUB
+      G = Bring All
+      L = Toggle Hub
+      No individual item keybinds by design.
+
+    IMPORTANT
+      Teleport-to-item is intentionally not included.
+      The script is designed as one LocalScript and needs no ModuleScript.
+]]
+
+--==================================================
+-- SERVICES
+--==================================================
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local TextService = game:GetService("TextService")
+local GuiService = game:GetService("GuiService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local LocalPlayer = Players.LocalPlayer
+if not LocalPlayer then
+    return
+end
+
+local CoreGui = game:GetService("CoreGui")
+
+local Existing = CoreGui:FindFirstChild("Ch2HubUltimate")
+if Existing then
+    Existing:Destroy()
+end
+
+--==================================================
+-- CONSTANTS / CONFIG
+--==================================================
+
+local HUB_NAME = "Ch2HubUltimate"
+local VERSION = "Ultimate Edition"
+local BUILD = "Ultimate Edition"
+
+local THEMES = {
+    Dark = {
+        Background = Color3.fromRGB(17, 18, 22),
+        Panel = Color3.fromRGB(27, 28, 34),
+        Panel2 = Color3.fromRGB(31, 32, 39),
+        Button = Color3.fromRGB(42, 43, 51),
+        Hover = Color3.fromRGB(57, 58, 68),
+        Accent = Color3.fromRGB(0, 170, 255),
+        Text = Color3.fromRGB(245, 246, 250),
+        SubText = Color3.fromRGB(166, 168, 180),
+        Stroke = Color3.fromRGB(67, 69, 81),
+        Danger = Color3.fromRGB(235, 82, 82),
+        Success = Color3.fromRGB(72, 205, 120),
+    },
+    Light = {
+        Background = Color3.fromRGB(235, 236, 242),
+        Panel = Color3.fromRGB(249, 249, 252),
+        Panel2 = Color3.fromRGB(242, 242, 247),
+        Button = Color3.fromRGB(223, 224, 232),
+        Hover = Color3.fromRGB(208, 209, 219),
+        Accent = Color3.fromRGB(0, 115, 220),
+        Text = Color3.fromRGB(28, 29, 35),
+        SubText = Color3.fromRGB(84, 86, 98),
+        Stroke = Color3.fromRGB(190, 191, 201),
+        Danger = Color3.fromRGB(205, 58, 58),
+        Success = Color3.fromRGB(40, 165, 92),
+    },
+    Neon = {
+        Background = Color3.fromRGB(9, 10, 16),
+        Panel = Color3.fromRGB(19, 20, 31),
+        Panel2 = Color3.fromRGB(24, 25, 39),
+        Button = Color3.fromRGB(30, 31, 48),
+        Hover = Color3.fromRGB(47, 49, 73),
+        Accent = Color3.fromRGB(255, 0, 190),
+        Text = Color3.fromRGB(255, 255, 255),
+        SubText = Color3.fromRGB(179, 180, 199),
+        Stroke = Color3.fromRGB(101, 45, 108),
+        Danger = Color3.fromRGB(242, 76, 106),
+        Success = Color3.fromRGB(70, 224, 170),
+    },
+    Forest = {
+        Background = Color3.fromRGB(14, 26, 18),
+        Panel = Color3.fromRGB(23, 40, 29),
+        Panel2 = Color3.fromRGB(27, 46, 33),
+        Button = Color3.fromRGB(33, 54, 39),
+        Hover = Color3.fromRGB(47, 71, 52),
+        Accent = Color3.fromRGB(76, 212, 106),
+        Text = Color3.fromRGB(240, 255, 242),
+        SubText = Color3.fromRGB(158, 192, 170),
+        Stroke = Color3.fromRGB(56, 89, 63),
+        Danger = Color3.fromRGB(218, 75, 84),
+        Success = Color3.fromRGB(76, 212, 106),
+    },
+    Sunset = {
+        Background = Color3.fromRGB(38, 21, 25),
+        Panel = Color3.fromRGB(53, 29, 33),
+        Panel2 = Color3.fromRGB(60, 33, 37),
+        Button = Color3.fromRGB(70, 38, 41),
+        Hover = Color3.fromRGB(89, 47, 49),
+        Accent = Color3.fromRGB(255, 125, 66),
+        Text = Color3.fromRGB(255, 243, 236),
+        SubText = Color3.fromRGB(205, 165, 156),
+        Stroke = Color3.fromRGB(107, 56, 54),
+        Danger = Color3.fromRGB(224, 75, 75),
+        Success = Color3.fromRGB(85, 206, 120),
+    },
+    Ocean = {
+        Background = Color3.fromRGB(10, 26, 37),
+        Panel = Color3.fromRGB(17, 38, 53),
+        Panel2 = Color3.fromRGB(20, 43, 59),
+        Button = Color3.fromRGB(25, 53, 70),
+        Hover = Color3.fromRGB(34, 71, 92),
+        Accent = Color3.fromRGB(42, 190, 255),
+        Text = Color3.fromRGB(236, 250, 255),
+        SubText = Color3.fromRGB(153, 190, 206),
+        Stroke = Color3.fromRGB(45, 86, 106),
+        Danger = Color3.fromRGB(225, 82, 82),
+        Success = Color3.fromRGB(67, 209, 160),
+    },
+    Crimson = {
+        Background = Color3.fromRGB(34, 13, 18),
+        Panel = Color3.fromRGB(49, 19, 25),
+        Panel2 = Color3.fromRGB(57, 22, 29),
+        Button = Color3.fromRGB(66, 25, 32),
+        Hover = Color3.fromRGB(87, 31, 39),
+        Accent = Color3.fromRGB(245, 54, 72),
+        Text = Color3.fromRGB(255, 240, 242),
+        SubText = Color3.fromRGB(205, 155, 161),
+        Stroke = Color3.fromRGB(105, 42, 49),
+        Danger = Color3.fromRGB(245, 54, 72),
+        Success = Color3.fromRGB(79, 206, 118),
+    },
+    Midnight = {
+        Background = Color3.fromRGB(10, 11, 24),
+        Panel = Color3.fromRGB(18, 19, 39),
+        Panel2 = Color3.fromRGB(22, 24, 47),
+        Button = Color3.fromRGB(28, 30, 55),
+        Hover = Color3.fromRGB(40, 43, 77),
+        Accent = Color3.fromRGB(130, 110, 255),
+        Text = Color3.fromRGB(240, 238, 255),
+        SubText = Color3.fromRGB(164, 160, 195),
+        Stroke = Color3.fromRGB(58, 59, 101),
+        Danger = Color3.fromRGB(224, 73, 96),
+        Success = Color3.fromRGB(81, 202, 170),
+    },
+}
+
+local THEME_ORDER = {"Dark", "Light", "Neon", "Forest", "Sunset", "Ocean", "Crimson", "Midnight"}
+
+local CH2_ITEMS = {
+    {Name = "Spark Plug", Key = "1", Category = "Items"},
+    {Name = "Gasoline can", Key = "2", Category = "Items"},
+    {Name = "Boat Steering Wheel", Key = "3", Category = "Vehicle"},
+    {Name = "PadLock Key", Key = "4", Category = "Keys"},
+    {Name = "Boat Key", Key = "5", Category = "Keys"},
+    {Name = "Security key", Key = "7", Category = "Keys"},
+    {Name = "Crowbar", Key = "8", Category = "Tools"},
+    {Name = "Cutting pliers", Key = "9", Category = "Tools"},
+    {Name = "Safe Key", Key = "0", Category = "Keys"},
+    {Name = "Hand Wheel", Key = "Y", Category = "Vehicle"},
+    {Name = "Door Handle", Key = "U", Category = "Items"},
+}
+
+local GRANNY_ITEMS = {
+    {Name = "A part of a shotgun", Category = "Weapons"},
+    {Name = "A part of a shotgun", Category = "Weapons"},
+    {Name = "Ammo", Category = "Weapons"},
+    {Name = "Ammo", Category = "Weapons"},
+    {Name = "Ammo", Category = "Weapons"},
+    {Name = "Car Key", Category = "Keys"},
+    {Name = "Cogwheel", Category = "Items"},
+    {Name = "Cogwheel", Category = "Items"},
+    {Name = "Crossbow", Category = "Weapons"},
+    {Name = "Cutting pliers", Category = "Tools"},
+    {Name = "Hammer", Category = "Tools"},
+    {Name = "LockPlank", Category = "Items"},
+    {Name = "Master Key", Category = "Keys"},
+    {Name = "Melon", Category = "Items"},
+    {Name = "PadLock Key", Category = "Keys"},
+    {Name = "Plank", Category = "Items"},
+    {Name = "Plank Playhouse Key", Category = "Keys"},
+    {Name = "SafeKey", Category = "Keys"},
+    {Name = "Screwdriver", Category = "Tools"},
+    {Name = "Tranquilizer dart", Category = "Weapons"},
+    {Name = "Tranquilizer dart", Category = "Weapons"},
+    {Name = "Tranquilizer dart", Category = "Weapons"},
+    {Name = "Vase", Category = "Items"},
+    {Name = "Weapon Key", Category = "Keys"},
+    {Name = "Winch handle", Category = "Items"},
+    {Name = "Crowbar", Category = "Tools"},
+    {Name = "Green Key", Category = "Keys"},
+    {Name = "KeyCard", Category = "Keys"},
+    {Name = "Purple Key", Category = "Keys"},
+    {Name = "Valve", Category = "Items"},
+    {Name = "Wrench", Category = "Tools"},
+    {Name = "Drill", Category = "Tools"},
+}
+
+local DATASETS = {
+    Ch2 = CH2_ITEMS,
+    Granny = GRANNY_ITEMS,
+}
+
+local CH2_KEYBINDS = {
+    One = "Spark Plug",
+    Two = "Gasoline can",
+    Three = "Boat Steering Wheel",
+    Four = "PadLock Key",
+    Five = "Boat Key",
+    Seven = "Security key",
+    Eight = "Crowbar",
+    Nine = "Cutting pliers",
+    Zero = "Safe Key",
+    Y = "Hand Wheel",
+    U = "Door Handle",
+}
+
+local ORIGINAL_SOURCES = {
+    ["V1"] = [=[
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local playerGui = game:GetService("CoreGui")
+
+local function getCharacter()
+	return player.Character or player.CharacterAdded:Wait()
+end
+
+local function findModelByName(name)
+	for _, d in ipairs(workspace:GetDescendants()) do
+		if d:IsA("Model") and d.Name == name then
+			return d
+		end
+	end
+	return nil
+end
+
+local function bringModelToPlayer(name)
+	local model = findModelByName(name)
+	if not model then
+		warn(("Model '%s' not found in workspace."):format(name))
+		return
+	end
+
+	local char = getCharacter()
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not root then
+		warn("No HumanoidRootPart found for player.")
+		return
+	end
+
+	local pos = root.Position + Vector3.new(0, 3, 0)
+	if model.PrimaryPart then
+		model:SetPrimaryPartCFrame(CFrame.new(pos))
+	else
+		for _, obj in ipairs(model:GetDescendants()) do
+			if obj:IsA("BasePart") then
+				local offset = pos - obj.Position
+				for _, p in ipairs(model:GetDescendants()) do
+					if p:IsA("BasePart") then
+						p.Position = p.Position + offset
+					end
+				end
+				break
+			end
+		end
+	end
+end
+
+local targets = {
+	{ key = Enum.KeyCode.One,   label = "Spark Plug" },
+	{ key = Enum.KeyCode.Two,   label = "Gasoline can" },
+	{ key = Enum.KeyCode.Three, label = "Boat Steering Wheel" },
+	{ key = Enum.KeyCode.Three, label = "PadLock Key" },
+	{ key = Enum.KeyCode.Five,  label = "Boat Key" },
+}
+
+local keyToText = {
+	[Enum.KeyCode.One]   = "1",
+	[Enum.KeyCode.Two]   = "2",
+	[Enum.KeyCode.Three] = "3",
+	[Enum.KeyCode.Four]  = "4",
+	[Enum.KeyCode.Five]  = "5",
+}
+
+local existing = playerGui:FindFirstChild("SummonPartsGui")
+if existing then existing:Destroy() end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "SummonPartsGui"
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.Parent = playerGui
+
+local frame = Instance.new("Frame")
+frame.Name = "Container"
+frame.AnchorPoint = Vector2.new(0, 0.5)
+frame.Position = UDim2.new(0, 12, 0.5, 0)
+frame.Size = UDim2.new(0, 240, 0, 240)
+frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+frame.BackgroundTransparency = 0.15
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+local uicorner = Instance.new("UICorner")
+uicorner.CornerRadius = UDim.new(0, 10)
+uicorner.Parent = frame
+
+local padding = Instance.new("UIPadding")
+padding.PaddingTop = UDim.new(0, 10)
+padding.PaddingBottom = UDim.new(0, 10)
+padding.PaddingLeft = UDim.new(0, 10)
+padding.PaddingRight = UDim.new(0, 10)
+padding.Parent = frame
+
+local list = Instance.new("UIListLayout")
+list.Parent = frame
+list.Padding = UDim.new(0, 8)
+list.SortOrder = Enum.SortOrder.LayoutOrder
+list.HorizontalAlignment = Enum.HorizontalAlignment.Left
+list.VerticalAlignment = Enum.VerticalAlignment.Top
+
+local buttonsByKey = {}
+
+local function createButton(entry)
+	local btn = Instance.new("TextButton")
+	btn.Name = "Btn_" .. entry.label
+	btn.Size = UDim2.new(1, 0, 0, 36)
+	btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+	btn.AutoButtonColor = true
+	btn.TextXAlignment = Enum.TextXAlignment.Left
+	btn.Font = Enum.Font.GothamSemibold
+	btn.TextSize = 14
+	btn.TextColor3 = Color3.fromRGB(235, 235, 235)
+	btn.Text = string.format("[%s]  %s", keyToText[entry.key] or "?", entry.label)
+	btn.Parent = frame
+
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, 8)
+	corner.Parent = btn
+
+	local inner = Instance.new("Frame")
+	inner.Name = "Accent"
+	inner.AnchorPoint = Vector2.new(0, 0.5)
+	inner.Position = UDim2.new(0, 6, 0.5, 0)
+	inner.Size = UDim2.new(0, 6, 1, -10)
+	inner.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+	inner.BorderSizePixel = 0
+	inner.Parent = btn
+
+	local innerCorner = Instance.new("UICorner")
+	innerCorner.CornerRadius = UDim.new(0, 3)
+	innerCorner.Parent = inner
+
+	local textPadding = Instance.new("UIPadding")
+	textPadding.PaddingLeft = UDim.new(0, 18)
+	textPadding.Parent = btn
+
+	btn.MouseButton1Click:Connect(function()
+		bringModelToPlayer(entry.label)
+	end)
+
+	buttonsByKey[entry.key] = entry.label
+end
+
+for _, entry in ipairs(targets) do
+	createButton(entry)
+end
+
+UserInputService.InputBegan:Connect(function(input, processed)
+	if processed then return end
+	local label = buttonsByKey[input.KeyCode]
+	if label then
+		bringModelToPlayer(label)
+	end
+end)
+
+]=],
+    ["OG V3"] = [=[
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local playerGui = game:GetService("CoreGui")
+
+local theme = {
+	background = Color3.fromRGB(28,28,28),
+	button = Color3.fromRGB(35,35,35),
+	buttonHover = Color3.fromRGB(60,60,60),
+	bringAllButton = Color3.fromRGB(0,150,255),
+	notificationDefault = Color3.fromRGB(255,255,255)
+}
+
+local function getCharacter()
+	return player.Character or player.CharacterAdded:Wait()
+end
+
+local function findModelByName(name)
+	for _, d in ipairs(workspace:GetDescendants()) do
+		if d:IsA("Model") and d.Name == name then
+			return d
+		end
+	end
+	return nil
+end
+
+local notificationQueue = {}
+local notificationActive = false
+local noteLabel
+local function showNotification(msg, color)
+	color = color or theme.notificationDefault
+	table.insert(notificationQueue, {msg = msg, color = color})
+	if not notificationActive then
+		local function process()
+			if #notificationQueue == 0 then
+				notificationActive = false
+				return
+			end
+			notificationActive = true
+			local data = table.remove(notificationQueue,1)
+			noteLabel.Text = data.msg
+			noteLabel.TextColor3 = data.color
+			noteLabel.TextTransparency = 1
+			local tweenIn = TweenService:Create(noteLabel, TweenInfo.new(0.25), {TextTransparency=0})
+			tweenIn:Play()
+			tweenIn.Completed:Wait()
+			task.delay(1.5,function()
+				local tweenOut = TweenService:Create(noteLabel, TweenInfo.new(0.25), {TextTransparency=1})
+				tweenOut:Play()
+				tweenOut.Completed:Wait()
+				process()
+			end)
+		end
+		process()
+	end
+end
+
+local function bringModelToPlayer(name)
+	local model = findModelByName(name)
+	if not model then
+		showNotification("❌ "..name.." not found!", Color3.fromRGB(255,100,100))
+		return
+	end
+	local char = getCharacter()
+	local root = char:FindFirstChild("HumanoidRootPart")
+	if not root then return end
+	local pos = root.Position + Vector3.new(0,3,0)
+	if not model.PrimaryPart then
+		local base = model:FindFirstChildWhichIsA("BasePart")
+		if base then model.PrimaryPart = base else
+			showNotification("❌ "..name.." has no parts!", Color3.fromRGB(255,100,100))
+			return
+		end
+	end
+	model:SetPrimaryPartCFrame(CFrame.new(pos))
+	showNotification("✅ Brought "..name.."!", Color3.fromRGB(100,255,100))
+end
+
+if playerGui:FindFirstChild("Ch2HubV3") then playerGui.Ch2HubV3:Destroy() end
+local gui = Instance.new("ScreenGui")
+gui.Name = "Ch2HubV3"
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.Parent = playerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,340,0,540)
+frame.Position = UDim2.new(0,20,0.5,-270)
+frame.AnchorPoint = Vector2.new(0,0.5)
+frame.BackgroundColor3 = theme.background
+frame.BorderSizePixel = 0
+frame.Parent = gui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,18)
+local padding = Instance.new("UIPadding", frame)
+padding.PaddingTop = UDim.new(0,14)
+padding.PaddingBottom = UDim.new(0,14)
+padding.PaddingLeft = UDim.new(0,14)
+padding.PaddingRight = UDim.new(0,14)
+
+local dragging, dragInput, dragStart, startPos = false,nil,nil,frame.Position
+local resizing, resizeInput, resizeStart, startSize = false,nil,nil,frame.Size
+local function updateDrag(input)
+	local delta = input.Position - dragStart
+	frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+local function updateResize(input)
+	local delta = input.Position - resizeStart
+	frame.Size = UDim2.new(startSize.X.Scale, math.clamp(startSize.X.Offset + delta.X, 200, 800), startSize.Y.Scale, math.clamp(startSize.Y.Offset + delta.Y, 300, 800))
+end
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseButton1 or input.UserInputType==Enum.UserInputType.Touch then
+		if input.Position.X > frame.AbsolutePosition.X + frame.AbsoluteSize.X - 20 and input.Position.Y > frame.AbsolutePosition.Y + frame.AbsoluteSize.Y - 20 then
+			resizing = true
+			resizeStart = input.Position
+			startSize = frame.Size
+			input.Changed:Connect(function()
+				if input.UserInputState==Enum.UserInputState.End then resizing=false end
+			end)
+		else
+			dragging = true
+			dragStart = input.Position
+			startPos = frame.Position
+			input.Changed:Connect(function()
+				if input.UserInputState==Enum.UserInputState.End then dragging=false end
+			end)
+		end
+	end
+end)
+frame.InputChanged:Connect(function(input)
+	if input.UserInputType==Enum.UserInputType.MouseMovement or input.UserInputType==Enum.UserInputType.Touch then
+		dragInput = input
+		resizeInput = input
+	end
+end)
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and input==dragInput then updateDrag(input) end
+	if resizing and input==resizeInput then updateResize(input) end
+end)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,34)
+title.BackgroundTransparency = 1
+title.Text = "🧰 Ch2 Hub V3"
+title.Font = Enum.Font.GothamBold
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.TextSize = 22
+title.TextXAlignment = Enum.TextXAlignment.Left
+
+noteLabel = Instance.new("TextLabel", frame)
+noteLabel.Size = UDim2.new(1,0,0,24)
+noteLabel.Position = UDim2.new(0,0,0,-28)
+noteLabel.BackgroundTransparency = 1
+noteLabel.Font = Enum.Font.GothamBold
+noteLabel.TextColor3 = theme.notificationDefault
+noteLabel.TextScaled = true
+noteLabel.Text = ""
+
+local searchBox = Instance.new("TextBox", frame)
+searchBox.Size = UDim2.new(1,0,0,36)
+searchBox.Position = UDim2.new(0,0,0,46)
+searchBox.PlaceholderText = "Search items..."
+searchBox.Font = Enum.Font.Gotham
+searchBox.TextColor3 = Color3.fromRGB(255,255,255)
+searchBox.BackgroundColor3 = Color3.fromRGB(40,40,40)
+searchBox.ClearTextOnFocus = false
+searchBox.TextXAlignment = Enum.TextXAlignment.Left
+
+local scrollFrame = Instance.new("ScrollingFrame", frame)
+scrollFrame.Size = UDim2.new(1,0,1,-100)
+scrollFrame.Position = UDim2.new(0,0,0,90)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.ScrollBarThickness = 8
+local listLayout = Instance.new("UIListLayout", scrollFrame)
+listLayout.Padding = UDim.new(0,6)
+listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+Instance.new("UIPadding", scrollFrame).PaddingTop = UDim.new(0,4)
+
+local targets = {
+	{ key = Enum.KeyCode.One,   label = "Spark Plug" },
+	{ key = Enum.KeyCode.Two,   label = "Gasoline can" },
+	{ key = Enum.KeyCode.Three, label = "Boat Steering Wheel" },
+	{ key = Enum.KeyCode.Four,  label = "PadLock Key" },
+	{ key = Enum.KeyCode.Five,  label = "Boat Key" },
+	{ key = Enum.KeyCode.Seven, label = "Security key" },
+	{ key = Enum.KeyCode.Eight, label = "Crowbar" },
+	{ key = Enum.KeyCode.Nine,  label = "Cutting pliers" },
+	{ key = Enum.KeyCode.Zero,  label = "Safe Key" },
+	{ key = Enum.KeyCode.Y,     label = "Hand Wheel" },
+	{ key = Enum.KeyCode.U,     label = "Door Handle" },
+}
+local keyToText = {
+	[Enum.KeyCode.One]="1",[Enum.KeyCode.Two]="2",[Enum.KeyCode.Three]="3",
+	[Enum.KeyCode.Four]="4",[Enum.KeyCode.Five]="5",[Enum.KeyCode.Seven]="7",
+	[Enum.KeyCode.Eight]="8",[Enum.KeyCode.Nine]="9",[Enum.KeyCode.Zero]="0",
+	[Enum.KeyCode.Y]="Y",[Enum.KeyCode.U]="U",
+}
+local buttonsByKey = {}
+local buttons = {}
+local function createButton(entry)
+	local btn = Instance.new("TextButton", scrollFrame)
+	btn.Size = UDim2.new(1,0,0,32)
+	btn.Text = string.format("[%s]  %s", keyToText[entry.key] or "?", entry.label)
+	btn.Font = Enum.Font.GothamSemibold
+	btn.TextSize = 16
+	btn.TextColor3 = Color3.fromRGB(235,235,235)
+	btn.BackgroundColor3 = theme.button
+	btn.AutoButtonColor = true
+	Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
+	btn.MouseButton1Click:Connect(function()
+		bringModelToPlayer(entry.label)
+	end)
+	buttonsByKey[entry.key] = entry.label
+	buttons[#buttons+1] = btn
+end
+for _,entry in ipairs(targets) do createButton(entry) end
+
+local bringAllBtn = Instance.new("TextButton", scrollFrame)
+bringAllBtn.Size = UDim2.new(1,0,0,36)
+bringAllBtn.BackgroundColor3 = theme.bringAllButton
+bringAllBtn.Font = Enum.Font.GothamBold
+bringAllBtn.TextSize = 18
+bringAllBtn.TextColor3 = Color3.fromRGB(255,255,255)
+bringAllBtn.Text = "🎯 Bring All Items"
+Instance.new("UICorner", bringAllBtn).CornerRadius = UDim.new(0,6)
+bringAllBtn.MouseButton1Click:Connect(function()
+	for _,entry in ipairs(targets) do
+		bringModelToPlayer(entry.label)
+	end
+end)
+
+listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	scrollFrame.CanvasSize = UDim2.new(0,0,0,listLayout.AbsoluteContentSize.Y+10)
+end)
+UserInputService.InputBegan:Connect(function(input, processed)
+	if processed then return end
+	local label = buttonsByKey[input.KeyCode]
+	if label then bringModelToPlayer(label) end
+end)
+searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+	local text = string.lower(searchBox.Text)
+	for _,btn in ipairs(buttons) do
+		btn.Visible = string.find(string.lower(btn.Text),text)~=nil
+	end
+end)
+UserInputService.InputBegan:Connect(function(input, processed)
+	if processed then return end
+	if input.KeyCode == Enum.KeyCode.L then
+		frame.Visible = not frame.Visible
+	end
+end)
+if UserInputService.TouchEnabled then
+	local toggleBtn = Instance.new("TextButton", gui)
+	toggleBtn.Size = UDim2.new(0,40,0,40)
+	toggleBtn.Position = UDim2.new(1,-50,0,10)
+	toggleBtn.Text = "🧰"
+	toggleBtn.Font = Enum.Font.GothamBold
+	toggleBtn.TextSize = 24
+	toggleBtn.TextColor3 = Color3.fromRGB(255,255,255)
+	toggleBtn.BackgroundColor3 = theme.button
+	toggleBtn.BorderSizePixel = 0
+	Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,8)
+	toggleBtn.MouseButton1Click:Connect(function()
+		frame.Visible = not frame.Visible
+	end)
+end
+
+]=],
+    ["V3 Remastered"] = [=[
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local playerGui = game:GetService("CoreGui")
+
+local HUB_NAME = "Ch2HubV3Remastered"
+local TOGGLE_KEY = Enum.KeyCode.L
+local BRING_ALL_KEY = Enum.KeyCode.G
+local usingLite = false
+
+local Theme = {
+    Background = Color3.fromRGB(25,25,25),
+    Button = Color3.fromRGB(45,45,45),
+    Accent = Color3.fromRGB(0,150,255),
+    Text = Color3.fromRGB(255,255,255)
+}
+
+local Items = {
+    {Name="Spark Plug", Key=Enum.KeyCode.One},
+    {Name="Gasoline can", Key=Enum.KeyCode.Two},
+    {Name="Boat Steering Wheel", Key=Enum.KeyCode.Three},
+    {Name="PadLock Key", Key=Enum.KeyCode.Four},
+    {Name="Boat Key", Key=Enum.KeyCode.Five},
+    {Name="Security key", Key=Enum.KeyCode.Six},
+    {Name="Crowbar", Key=Enum.KeyCode.Seven},
+    {Name="Cutting pliers", Key=Enum.KeyCode.Eight},
+    {Name="Safe Key", Key=Enum.KeyCode.Nine},
+    {Name="Hand Wheel", Key=Enum.KeyCode.Zero},
+    {Name="Door Handle", Key=Enum.KeyCode.F}
+}
+
+local gui = Instance.new("ScreenGui")
+gui.Name = HUB_NAME
+gui.IgnoreGuiInset = true
+gui.ResetOnSpawn = false
+gui.Parent = playerGui
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0,300,0,450)
+frame.Position = UDim2.new(0,20,0.5,-225)
+frame.BackgroundColor3 = Theme.Background
+frame.Active = true
+frame.Draggable = true
+frame.Parent = gui
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,8)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,32)
+title.BackgroundTransparency = 1
+title.Text = "🧰 Ch2 Hub V3 Remastered"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextColor3 = Theme.Text
+
+local note = Instance.new("TextLabel", frame)
+note.Size = UDim2.new(1,0,0,24)
+note.Position = UDim2.new(0,0,1,-60)
+note.BackgroundTransparency = 1
+note.Font = Enum.Font.Gotham
+note.TextSize = 14
+note.TextColor3 = Theme.Accent
+note.Text = ""
+
+local function notify(msg)
+    note.Text = msg
+    task.delay(1.3, function() if note.Text == msg then note.Text = "" end end)
+end
+
+local scroll = Instance.new("ScrollingFrame", frame)
+scroll.Size = UDim2.new(1,-20,1,-120)
+scroll.Position = UDim2.new(0,10,0,50)
+scroll.BackgroundTransparency = 1
+scroll.ScrollBarThickness = 6
+scroll.CanvasSize = UDim2.new(0,0,0,0)
+
+local layout = Instance.new("UIListLayout", scroll)
+layout.Padding = UDim.new(0,5)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local function bringItem(name)
+    local char = player.Character or player.CharacterAdded:Wait()
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return notify("No HumanoidRootPart!") end
+    local found = workspace:FindFirstChild(name,true)
+    if not found then return notify(name.." not found!") end
+    if found:IsA("Model") and found.PrimaryPart then
+        found:SetPrimaryPartCFrame(root.CFrame + Vector3.new(0,3,0))
+    elseif found:IsA("BasePart") then
+        found.CFrame = root.CFrame + Vector3.new(0,3,0)
+    end
+    notify("Brought "..name)
+end
+
+local buttons = {}
+local function buildButtons()
+    for _,v in ipairs(buttons) do if v then v:Destroy() end end
+    buttons = {}
+    for _,item in ipairs(Items) do
+        local btn = Instance.new("TextButton", scroll)
+        btn.Size = UDim2.new(1,0,0,32)
+        btn.Text = "📦 "..item.Name.." ["..item.Key.Name.."]"
+        btn.Font = Enum.Font.GothamSemibold
+        btn.TextSize = 16
+        btn.TextColor3 = Theme.Text
+        btn.BackgroundColor3 = Theme.Button
+        btn.AutoButtonColor = true
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
+        btn.MouseButton1Click:Connect(function() bringItem(item.Name) end)
+        table.insert(buttons, btn)
+    end
+    scroll.CanvasSize = UDim2.new(0,0,0,layout.AbsoluteContentSize.Y+10)
+end
+buildButtons()
+
+local bringAll = Instance.new("TextButton", frame)
+bringAll.Size = UDim2.new(1,-20,0,36)
+bringAll.Position = UDim2.new(0,10,1,-30)
+bringAll.Text = "🎯 Bring All [G]"
+bringAll.Font = Enum.Font.GothamBold
+bringAll.TextSize = 16
+bringAll.TextColor3 = Theme.Text
+bringAll.BackgroundColor3 = Theme.Accent
+Instance.new("UICorner", bringAll).CornerRadius = UDim.new(0,6)
+bringAll.MouseButton1Click:Connect(function()
+    for _,item in ipairs(Items) do bringItem(item.Name) task.wait(0.05) end
+    notify("Attempted to bring all items.")
+end)
+
+local settingsBtn = Instance.new("TextButton", frame)
+settingsBtn.Size = UDim2.new(0,120,0,30)
+settingsBtn.Position = UDim2.new(1,-130,0,6)
+settingsBtn.Text = "⚙ Settings"
+settingsBtn.Font = Enum.Font.GothamBold
+settingsBtn.TextSize = 14
+settingsBtn.TextColor3 = Theme.Text
+settingsBtn.BackgroundColor3 = Theme.Accent
+Instance.new("UICorner", settingsBtn).CornerRadius = UDim.new(0,6)
+
+local toggleLiteBtn
+settingsBtn.MouseButton1Click:Connect(function()
+    if toggleLiteBtn then
+        toggleLiteBtn:Destroy()
+        toggleLiteBtn = nil
+    else
+        toggleLiteBtn = Instance.new("TextButton", frame)
+        toggleLiteBtn.Size = UDim2.new(0,180,0,28)
+        toggleLiteBtn.Position = UDim2.new(1,-190,0,40)
+        toggleLiteBtn.Font = Enum.Font.GothamBold
+        toggleLiteBtn.TextSize = 14
+        toggleLiteBtn.TextColor3 = Theme.Text
+        toggleLiteBtn.BackgroundColor3 = Theme.Button
+        Instance.new("UICorner", toggleLiteBtn).CornerRadius = UDim.new(0,6)
+
+        local function updateLiteText()
+            toggleLiteBtn.Text = usingLite and "Switch to Remastered Version" or "Switch to Lite Version"
+        end
+        updateLiteText()
+
+        toggleLiteBtn.MouseButton1Click:Connect(function()
+            usingLite = not usingLite
+            title.Text = usingLite and "🧰 Ch2 Hub V3 Lite" or "🧰 Ch2 Hub V3 Remastered"
+            buildButtons()
+            updateLiteText()
+            toggleLiteBtn:Destroy()
+            toggleLiteBtn = nil
+        end)
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input,processed)
+    if processed then return end
+    if input.KeyCode == TOGGLE_KEY then
+        frame.Visible = not frame.Visible
+    elseif input.KeyCode == BRING_ALL_KEY then
+        for _,item in ipairs(Items) do bringItem(item.Name) task.wait(0.05) end
+        notify("Attempted to bring all items.")
+    else
+        for _,item in ipairs(Items) do
+            if input.KeyCode == item.Key then bringItem(item.Name) end
+        end
+    end
+end)
+
+if UserInputService.TouchEnabled then
+    local toggle = Instance.new("TextButton", gui)
+    toggle.Size = UDim2.new(0,50,0,50)
+    toggle.Position = UDim2.new(1,-60,0,20)
+    toggle.Text = "🧰"
+    toggle.Font = Enum.Font.GothamBold
+    toggle.TextSize = 22
+    toggle.BackgroundColor3 = Theme.Accent
+    toggle.TextColor3 = Theme.Text
+    Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,10)
+    toggle.MouseButton1Click:Connect(function()
+        frame.Visible = not frame.Visible
+    end)
+end
+
+return nil
+
+]=],
+    ["V4"] = [=[
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
+
+local player = Players.LocalPlayer
+local playerGui = game:GetService("CoreGui")
+
+-- CONFIG
+local HUB_NAME = "Ch2HubV4"
+local SETTINGS_KEY = "Ch2HubV4_Settings"
+
+-- THEMES
+local themes = {
+    Dark = {bg=Color3.fromRGB(20,20,20), button=Color3.fromRGB(40,40,40), hover=Color3.fromRGB(60,60,60), accent=Color3.fromRGB(0,150,255), text=Color3.fromRGB(255,255,255), glow=Color3.fromRGB(0,120,255)},
+    Light = {bg=Color3.fromRGB(245,245,245), button=Color3.fromRGB(215,215,215), hover=Color3.fromRGB(180,180,180), accent=Color3.fromRGB(0,100,255), text=Color3.fromRGB(0,0,0), glow=Color3.fromRGB(0,100,255)},
+    Ocean = {bg=Color3.fromRGB(10,50,80), button=Color3.fromRGB(15,70,110), hover=Color3.fromRGB(30,100,150), accent=Color3.fromRGB(0,200,255), text=Color3.fromRGB(220,255,255), glow=Color3.fromRGB(0,200,255)},
+    Sunset = {bg=Color3.fromRGB(80,30,20), button=Color3.fromRGB(120,50,35), hover=Color3.fromRGB(150,70,50), accent=Color3.fromRGB(255,120,60), text=Color3.fromRGB(255,220,200), glow=Color3.fromRGB(255,120,60)},
+    Cyber = {bg=Color3.fromRGB(10,10,25), button=Color3.fromRGB(20,30,50), hover=Color3.fromRGB(40,80,140), accent=Color3.fromRGB(0,255,180), text=Color3.fromRGB(200,255,255), glow=Color3.fromRGB(0,255,180)},
+    Emerald = {bg=Color3.fromRGB(10,35,20), button=Color3.fromRGB(25,65,35), hover=Color3.fromRGB(40,100,60), accent=Color3.fromRGB(0,255,120), text=Color3.fromRGB(210,255,230), glow=Color3.fromRGB(0,255,120)},
+    Crimson = {bg=Color3.fromRGB(45,0,0), button=Color3.fromRGB(75,10,10), hover=Color3.fromRGB(100,20,20), accent=Color3.fromRGB(255,70,70), text=Color3.fromRGB(255,230,230), glow=Color3.fromRGB(255,70,70)},
+    Midnight = {bg=Color3.fromRGB(12,12,30), button=Color3.fromRGB(30,30,60), hover=Color3.fromRGB(60,60,100), accent=Color3.fromRGB(140,0,255), text=Color3.fromRGB(220,220,255), glow=Color3.fromRGB(140,0,255)},
+}
+local themeNames = {}
+for k in pairs(themes) do table.insert(themeNames, k) end
+local themeIndex = 1
+local currentTheme = themes.Dark
+
+-- ITEMS
+local items = {
+    "Spark Plug", "Gasoline can", "Boat Steering Wheel", "PadLock Key",
+    "Boat Key", "Security key", "Crowbar", "Cutting pliers", "Safe Key",
+    "Hand Wheel", "Door Handle"
+}
+
+-- UTILS
+local function getChar() return player.Character or player.CharacterAdded:Wait() end
+local function safeTween(obj, t, goal) TweenService:Create(obj, TweenInfo.new(t, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), goal):Play() end
+
+-- NOTIFICATIONS
+local notificationQueue, noteActive = {}, false
+local noteLabel
+local function notify(msg, color)
+    table.insert(notificationQueue, {msg=msg, color=color or currentTheme.text})
+    if noteActive then return end
+    noteActive = true
+    while #notificationQueue > 0 do
+        local n = table.remove(notificationQueue, 1)
+        noteLabel.Text = n.msg
+        noteLabel.TextColor3 = n.color
+        safeTween(noteLabel, 0.25, {TextTransparency = 0})
+        task.wait(1.6)
+        safeTween(noteLabel, 0.25, {TextTransparency = 1})
+        task.wait(0.25)
+    end
+    noteActive = false
+end
+
+-- BRING + TELEPORT
+local function bringItem(name)
+    local char, root = getChar(), getChar():FindFirstChild("HumanoidRootPart")
+    local t = workspace:FindFirstChild(name, true)
+    if not (t and root) then notify("❌ " .. name .. " not found!", Color3.fromRGB(255,100,100)) return end
+    if t:IsA("Model") and t.PrimaryPart then
+        t:SetPrimaryPartCFrame(root.CFrame + Vector3.new(0,3,0))
+    elseif t:IsA("BasePart") then
+        t.CFrame = root.CFrame + Vector3.new(0,3,0)
+    end
+    notify("✅ Brought " .. name, Color3.fromRGB(100,255,100))
+end
+
+local function teleportToItem(name)
+    local char, root = getChar(), getChar():FindFirstChild("HumanoidRootPart")
+    local t = workspace:FindFirstChild(name, true)
+    if not (t and root) then notify("❌ " .. name .. " not found!", Color3.fromRGB(255,100,100)) return end
+    local pos = t:IsA("Model") and t:GetBoundingBox().Position or t.Position
+    root.CFrame = CFrame.new(pos + Vector3.new(0,3,0))
+    notify("🧭 Teleported to " .. name, currentTheme.accent)
+end
+
+-- GUI
+local gui = Instance.new("ScreenGui", playerGui)
+gui.Name = HUB_NAME
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+
+-- GLOW
+local glow = Instance.new("ImageLabel", gui)
+glow.Size = UDim2.new(0,420,0,600)
+glow.Position = UDim2.new(0,0,0.5,-300)
+glow.AnchorPoint = Vector2.new(0,0.5)
+glow.BackgroundTransparency = 1
+glow.Image = "rbxassetid://4996891970"
+glow.ImageTransparency = 0.85
+glow.ScaleType = Enum.ScaleType.Slice
+glow.SliceCenter = Rect.new(100,100,100,100)
+glow.Visible = true
+
+-- FRAME
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,360,0,540)
+frame.Position = UDim2.new(0,30,0.5,-270)
+frame.AnchorPoint = Vector2.new(0,0.5)
+frame.BackgroundColor3 = currentTheme.bg
+frame.BorderSizePixel = 0
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,16)
+
+-- SAVE/LOAD SETTINGS
+local function saveSettings()
+    local data = {
+        pos = {frame.Position.X.Offset, frame.Position.Y.Offset},
+        size = {frame.Size.X.Offset, frame.Size.Y.Offset},
+        theme = themeIndex
+    }
+    pcall(function() player:SetAttribute(SETTINGS_KEY, HttpService:JSONEncode(data)) end)
+end
+local function loadSettings()
+    local raw = player:GetAttribute(SETTINGS_KEY)
+    if raw then
+        local data = HttpService:JSONDecode(raw)
+        if data then
+            frame.Position = UDim2.new(0,data.pos[1],0,data.pos[2])
+            frame.Size = UDim2.new(0,data.size[1],0,data.size[2])
+            themeIndex = data.theme or 1
+        end
+    end
+end
+loadSettings()
+
+-- DRAG/RESIZE
+local dragging, resizing, dragStart, resizeStart, startPos, startSize
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        local absPos, absSize = frame.AbsolutePosition, frame.AbsoluteSize
+        if input.Position.X > absPos.X+absSize.X-20 and input.Position.Y > absPos.Y+absSize.Y-20 then
+            resizing = true resizeStart = input.Position startSize = frame.Size
+            input.Changed:Connect(function() if input.UserInputState==Enum.UserInputState.End then resizing=false saveSettings() end end)
+        else
+            dragging = true dragStart = input.Position startPos = frame.Position
+            input.Changed:Connect(function() if input.UserInputState==Enum.UserInputState.End then dragging=false saveSettings() end end)
+        end
+    end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if dragging then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(0,startPos.X.Offset+delta.X,0,startPos.Y.Offset+delta.Y)
+        glow.Position = UDim2.new(0,frame.Position.X.Offset-30,0.5,-300)
+    end
+    if resizing then
+        local delta = input.Position - resizeStart
+        frame.Size = UDim2.new(0,math.clamp(startSize.X.Offset+delta.X,240,800),0,math.clamp(startSize.Y.Offset+delta.Y,300,900))
+    end
+end)
+
+-- HEADER
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,36)
+title.Text = "🧰 Ch2 Hub V4"
+title.Font = Enum.Font.GothamBold
+title.TextColor3 = currentTheme.text
+title.BackgroundTransparency = 1
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.TextSize = 22
+
+-- NOTIFICATION LABEL
+noteLabel = Instance.new("TextLabel", frame)
+noteLabel.Size = UDim2.new(1,0,0,24)
+noteLabel.Position = UDim2.new(0,0,0,-28)
+noteLabel.Font = Enum.Font.GothamBold
+noteLabel.TextScaled = true
+noteLabel.TextTransparency = 1
+noteLabel.BackgroundTransparency = 1
+noteLabel.TextColor3 = currentTheme.text
+
+-- SEARCH
+local searchBox = Instance.new("TextBox", frame)
+searchBox.Size = UDim2.new(1,0,0,36)
+searchBox.Position = UDim2.new(0,0,0,46)
+searchBox.PlaceholderText = "🔍 Search items..."
+searchBox.Font = Enum.Font.Gotham
+searchBox.TextColor3 = currentTheme.text
+searchBox.BackgroundColor3 = currentTheme.button
+searchBox.ClearTextOnFocus = false
+Instance.new("UICorner", searchBox).CornerRadius = UDim.new(0,6)
+
+-- THEME BUTTON
+local themeBtn = Instance.new("TextButton", frame)
+themeBtn.Size = UDim2.new(0,110,0,32)
+themeBtn.Position = UDim2.new(1,-120,0,4)
+themeBtn.Text = "🎨 Theme"
+themeBtn.Font = Enum.Font.GothamBold
+themeBtn.TextSize = 16
+themeBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", themeBtn).CornerRadius = UDim.new(0,6)
+
+-- ITEM LIST
+local scroll = Instance.new("ScrollingFrame", frame)
+scroll.Size = UDim2.new(1,0,1,-180)
+scroll.Position = UDim2.new(0,0,0,90)
+scroll.BackgroundTransparency = 1
+scroll.ScrollBarThickness = 6
+local layout = Instance.new("UIListLayout", scroll)
+layout.Padding = UDim.new(0,6)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local buttons = {}
+for _,name in ipairs(items) do
+    local holder = Instance.new("Frame", scroll)
+    holder.Size = UDim2.new(1,0,0,32)
+    holder.BackgroundTransparency = 1
+
+    local bring = Instance.new("TextButton", holder)
+    bring.Size = UDim2.new(0.5,-4,1,0)
+    bring.Text = "📦 " .. name
+    bring.Font = Enum.Font.GothamSemibold
+    bring.TextColor3 = currentTheme.text
+    bring.BackgroundColor3 = currentTheme.button
+    Instance.new("UICorner", bring).CornerRadius = UDim.new(0,6)
+
+    local tp = bring:Clone()
+    tp.Parent = holder
+    tp.Position = UDim2.new(0.5,4,0,0)
+    tp.Text = "🧭 Teleport"
+    tp.MouseButton1Click:Connect(function() teleportToItem(name) end)
+    tp.MouseEnter:Connect(function() tp.BackgroundColor3 = currentTheme.hover end)
+    tp.MouseLeave:Connect(function() tp.BackgroundColor3 = currentTheme.button end)
+
+    bring.MouseButton1Click:Connect(function() bringItem(name) end)
+    bring.MouseEnter:Connect(function() bring.BackgroundColor3 = currentTheme.hover end)
+    bring.MouseLeave:Connect(function() bring.BackgroundColor3 = currentTheme.button end)
+
+    table.insert(buttons, holder)
+end
+
+-- SEARCH FILTER
+searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local t = string.lower(searchBox.Text)
+    for _,b in ipairs(buttons) do
+        local txt = b:FindFirstChildOfClass("TextButton").Text
+        b.Visible = string.find(string.lower(txt), t or "") ~= nil
+    end
+end)
+
+-- APPLY THEME
+local function applyTheme()
+    currentTheme = themes[themeNames[themeIndex]]
+    frame.BackgroundColor3 = currentTheme.bg
+    title.TextColor3 = currentTheme.text
+    searchBox.TextColor3 = currentTheme.text
+    searchBox.BackgroundColor3 = currentTheme.button
+    themeBtn.BackgroundColor3 = currentTheme.accent
+    glow.ImageColor3 = currentTheme.glow
+    for _,b in ipairs(buttons) do
+        for _,child in ipairs(b:GetChildren()) do
+            if child:IsA("TextButton") then
+                child.TextColor3 = currentTheme.text
+                child.BackgroundColor3 = currentTheme.button
+            end
+        end
+    end
+end
+themeBtn.MouseButton1Click:Connect(function()
+    themeIndex = themeIndex % #themeNames + 1
+    notify("🎨 Theme: " .. themeNames[themeIndex])
+    applyTheme()
+    saveSettings()
+end)
+applyTheme()
+
+-- BRING ALL BUTTON
+local bringAll = Instance.new("TextButton", frame)
+bringAll.Size = UDim2.new(1,0,0,40)
+bringAll.Position = UDim2.new(0,0,1,-60)
+bringAll.Text = "🎯 Bring All Items"
+bringAll.Font = Enum.Font.GothamBold
+bringAll.TextColor3 = Color3.fromRGB(255,255,255)
+bringAll.BackgroundColor3 = currentTheme.accent
+bringAll.TextSize = 18
+Instance.new("UICorner", bringAll).CornerRadius = UDim.new(0,8)
+bringAll.MouseButton1Click:Connect(function()
+    for _,n in ipairs(items) do bringItem(n) end
+end)
+
+-- CREDITS
+local creditsBtn = Instance.new("TextButton", frame)
+creditsBtn.Size = UDim2.new(1,0,0,28)
+creditsBtn.Position = UDim2.new(0,0,1,-100)
+creditsBtn.BackgroundColor3 = currentTheme.button
+creditsBtn.Font = Enum.Font.Gotham
+creditsBtn.TextSize = 14
+creditsBtn.TextColor3 = currentTheme.text
+creditsBtn.Text = "📜 Credits"
+Instance.new("UICorner", creditsBtn).CornerRadius = UDim.new(0,6)
+
+local creditsLabel = Instance.new("TextLabel", frame)
+creditsLabel.Size = UDim2.new(1,-20,0,60)
+creditsLabel.Position = UDim2.new(0,10,1,-160)
+creditsLabel.BackgroundTransparency = 1
+creditsLabel.TextColor3 = currentTheme.text
+creditsLabel.TextSize = 14
+creditsLabel.Font = Enum.Font.Gotham
+creditsLabel.TextWrapped = true
+creditsLabel.Text = "Made by heyitsmeghost\nOriginally made by emottas_show"
+creditsLabel.Visible = false
+
+creditsBtn.MouseButton1Click:Connect(function()
+    creditsLabel.Visible = not creditsLabel.Visible
+end)
+
+-- MOBILE TOGGLE
+if UserInputService.TouchEnabled then
+    local toggle = Instance.new("TextButton", gui)
+    toggle.Size = UDim2.new(0,50,0,50)
+    toggle.Position = UDim2.new(1,-60,0,10)
+    toggle.Text = "🧰"
+    toggle.Font = Enum.Font.GothamBold
+    toggle.TextSize = 28
+    toggle.BackgroundColor3 = currentTheme.accent
+    toggle.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,12)
+    local vis = true
+    toggle.MouseButton1Click:Connect(function()
+        vis = not vis
+        frame.Visible = vis
+        glow.Visible = vis
+    end)
+end
+]=],
+    ["V5"] = [=[
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local player = Players.LocalPlayer
+local playerGui = game:GetService("CoreGui")
+
+local HUB_NAME = "Ch2HubV5"
+
+local themes = {
+    Dark     = {bg=Color3.fromRGB(20,20,20), button=Color3.fromRGB(40,40,40), hover=Color3.fromRGB(60,60,60), accent=Color3.fromRGB(0,150,255), text=Color3.fromRGB(255,255,255)},
+    Light    = {bg=Color3.fromRGB(245,245,245), button=Color3.fromRGB(215,215,215), hover=Color3.fromRGB(180,180,180), accent=Color3.fromRGB(0,100,255), text=Color3.fromRGB(0,0,0)},
+    Neon     = {bg=Color3.fromRGB(5,5,15), button=Color3.fromRGB(30,0,60), hover=Color3.fromRGB(60,0,120), accent=Color3.fromRGB(255,0,255), text=Color3.fromRGB(255,255,255)},
+    Forest   = {bg=Color3.fromRGB(10,35,20), button=Color3.fromRGB(25,65,35), hover=Color3.fromRGB(40,100,60), accent=Color3.fromRGB(0,255,120), text=Color3.fromRGB(210,255,230)},
+    Sunset   = {bg=Color3.fromRGB(80,30,20), button=Color3.fromRGB(120,50,35), hover=Color3.fromRGB(150,70,50), accent=Color3.fromRGB(255,120,60), text=Color3.fromRGB(255,220,200)},
+    Ocean    = {bg=Color3.fromRGB(10,50,80), button=Color3.fromRGB(15,70,110), hover=Color3.fromRGB(30,100,150), accent=Color3.fromRGB(0,200,255), text=Color3.fromRGB(220,255,255)},
+    Crimson  = {bg=Color3.fromRGB(45,0,0), button=Color3.fromRGB(75,10,10), hover=Color3.fromRGB(100,20,20), accent=Color3.fromRGB(255,70,70), text=Color3.fromRGB(255,230,230)},
+    Midnight = {bg=Color3.fromRGB(12,12,30), button=Color3.fromRGB(30,30,60), hover=Color3.fromRGB(60,60,100), accent=Color3.fromRGB(140,0,255), text=Color3.fromRGB(220,220,255)}
+}
+
+local themeNames, themeIndex = {}, 1
+for k in pairs(themes) do table.insert(themeNames, k) end
+local currentTheme = themes.Dark
+
+local items = {
+    "Spark Plug", "Gasoline can", "Boat Steering Wheel", "PadLock Key",
+    "Boat Key", "Security key", "Crowbar", "Cutting pliers", "Safe Key",
+    "Hand Wheel", "Door Handle"
+}
+
+local favorites = {}
+
+local function getChar() return player.Character or player.CharacterAdded:Wait() end
+local function safeTween(obj, t, goal) TweenService:Create(obj, TweenInfo.new(t, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), goal):Play() end
+
+local notificationQueue, noteActive = {}, false
+local noteLabel
+local function notify(msg, color)
+    table.insert(notificationQueue, {msg=msg, color=color or currentTheme.text})
+    if noteActive then return end
+    noteActive = true
+    while #notificationQueue > 0 do
+        local n = table.remove(notificationQueue, 1)
+        noteLabel.Text = n.msg
+        noteLabel.TextColor3 = n.color
+        safeTween(noteLabel, 0.2, {TextTransparency=0})
+        task.wait(1.5)
+        safeTween(noteLabel, 0.2, {TextTransparency=1})
+        task.wait(0.1)
+    end
+    noteActive = false
+end
+
+local function bringItem(name)
+    local char = getChar()
+    local root = char:FindFirstChild("HumanoidRootPart")
+    if not root then return notify("❌ No HumanoidRootPart!", Color3.fromRGB(255,100,100)) end
+    local t = workspace:FindFirstChild(name, true)
+    if not t then return notify("❌ "..name.." not found!", Color3.fromRGB(255,100,100)) end
+    if t:IsA("Model") and t.PrimaryPart then
+        t:SetPrimaryPartCFrame(root.CFrame + Vector3.new(0,3,0))
+    elseif t:IsA("BasePart") then
+        t.CFrame = root.CFrame + Vector3.new(0,3,0)
+    end
+    notify("✅ "..name.." brought!", Color3.fromRGB(100,255,100))
+end
+
+local gui = Instance.new("ScreenGui", playerGui)
+gui.Name = HUB_NAME
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,400,0,580)
+frame.Position = UDim2.new(0,50,0.5,-290)
+frame.AnchorPoint = Vector2.new(0,0.5)
+frame.BackgroundColor3 = currentTheme.bg
+frame.BorderSizePixel = 0
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,16)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,42)
+title.Text = "🧰 Ch2 Hub V5"
+title.Font = Enum.Font.GothamBold
+title.TextColor3 = currentTheme.text
+title.BackgroundTransparency = 1
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.TextSize = 36
+
+noteLabel = Instance.new("TextLabel", frame)
+noteLabel.Size = UDim2.new(1,0,0,28)
+noteLabel.Position = UDim2.new(0,0,0,-30)
+noteLabel.Font = Enum.Font.GothamBold
+noteLabel.TextScaled = true
+noteLabel.TextTransparency = 1
+noteLabel.BackgroundTransparency = 1
+noteLabel.TextColor3 = currentTheme.text
+
+local search = Instance.new("TextBox", frame)
+search.Size = UDim2.new(1,0,0,42)
+search.Position = UDim2.new(0,0,0,50)
+search.PlaceholderText = "🔍 Search items..."
+search.Font = Enum.Font.Gotham
+search.TextColor3 = currentTheme.text
+search.BackgroundColor3 = currentTheme.button
+Instance.new("UICorner", search).CornerRadius = UDim.new(0,6)
+search.ClearTextOnFocus = false
+
+local scroll = Instance.new("ScrollingFrame", frame)
+scroll.Size = UDim2.new(1,0,1,-220)
+scroll.Position = UDim2.new(0,0,0,100)
+scroll.BackgroundTransparency = 1
+scroll.ScrollBarThickness = 6
+local layout = Instance.new("UIListLayout", scroll)
+layout.Padding = UDim.new(0,6)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local buttons = {}
+for _,name in ipairs(items) do
+    local holder = Instance.new("Frame", scroll)
+    holder.Size = UDim2.new(1,0,0,36)
+    holder.BackgroundTransparency = 1
+
+    local btn = Instance.new("TextButton", holder)
+    btn.Size = UDim2.new(1,-44,1,0)
+    btn.Text = "📦 "..name
+    btn.Font = Enum.Font.GothamSemibold
+    btn.TextColor3 = currentTheme.text
+    btn.TextSize = 20
+    btn.BackgroundColor3 = currentTheme.button
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)
+    btn.MouseButton1Click:Connect(function() bringItem(name) end)
+    btn.MouseEnter:Connect(function() btn.BackgroundColor3 = currentTheme.hover end)
+    btn.MouseLeave:Connect(function() btn.BackgroundColor3 = currentTheme.button end)
+    table.insert(buttons, holder)
+end
+
+search:GetPropertyChangedSignal("Text"):Connect(function()
+    local t = string.lower(search.Text)
+    for _,b in ipairs(buttons) do
+        local txt = b:FindFirstChildOfClass("TextButton").Text
+        b.Visible = string.find(string.lower(txt), t) ~= nil
+    end
+end)
+
+local themeBtn = Instance.new("TextButton", frame)
+themeBtn.Size = UDim2.new(0,120,0,36)
+themeBtn.Position = UDim2.new(1,-140,0,6)
+themeBtn.Text = "🎨 Theme"
+themeBtn.Font = Enum.Font.GothamBold
+themeBtn.TextSize = 16
+themeBtn.TextColor3 = Color3.new(1,1,1)
+Instance.new("UICorner", themeBtn).CornerRadius = UDim.new(0,6)
+local function applyTheme()
+    currentTheme = themes[themeNames[themeIndex]]
+    frame.BackgroundColor3 = currentTheme.bg
+    title.TextColor3 = currentTheme.text
+    search.TextColor3 = currentTheme.text
+    search.BackgroundColor3 = currentTheme.button
+    themeBtn.BackgroundColor3 = currentTheme.accent
+    for _,b in ipairs(buttons) do
+        local btn = b:FindFirstChildOfClass("TextButton")
+        btn.BackgroundColor3 = currentTheme.button
+        btn.TextColor3 = currentTheme.text
+    end
+end
+themeBtn.MouseButton1Click:Connect(function()
+    themeIndex = themeIndex % #themeNames + 1
+    notify("🎨 Theme: "..themeNames[themeIndex])
+    applyTheme()
+end)
+applyTheme()
+
+local bringAll = Instance.new("TextButton", frame)
+bringAll.Size = UDim2.new(1,0,0,44)
+bringAll.Position = UDim2.new(0,0,1,-60)
+bringAll.Text = "🎯 Bring All Items"
+bringAll.Font = Enum.Font.GothamBold
+bringAll.TextColor3 = Color3.fromRGB(255,255,255)
+bringAll.BackgroundColor3 = currentTheme.accent
+bringAll.TextSize = 20
+Instance.new("UICorner", bringAll).CornerRadius = UDim.new(0,8)
+bringAll.MouseButton1Click:Connect(function()
+    for _,name in ipairs(items) do bringItem(name) end
+end)
+
+local credits = Instance.new("TextLabel", frame)
+credits.Size = UDim2.new(1,-20,0,60)
+credits.Position = UDim2.new(0,10,1,-120)
+credits.BackgroundTransparency = 1
+credits.TextColor3 = currentTheme.text
+credits.TextSize = 16
+credits.Font = Enum.Font.Gotham
+credits.TextWrapped = true
+credits.Text = "Made by heyitsmeghost\nOriginally made by emottas_show"
+
+if UserInputService.TouchEnabled then
+    local toggle = Instance.new("TextButton", gui)
+    toggle.Size = UDim2.new(0,50,0,50)
+    toggle.Position = UDim2.new(1,-60,0,10)
+    toggle.Text = "🧰"
+    toggle.Font = Enum.Font.GothamBold
+    toggle.TextSize = 28
+    toggle.BackgroundColor3 = currentTheme.accent
+    toggle.TextColor3 = Color3.new(1,1,1)
+    Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,12)
+    local vis = true
+    toggle.MouseButton1Click:Connect(function()
+        vis = not vis
+        frame.Visible = vis
+    end)
+end
+
+local dragging, dragStart, startPos
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(0, startPos.X.Offset + delta.X, 0, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if not gpe and input.KeyCode == Enum.KeyCode.L then
+        frame.Visible = not frame.Visible
+    end
+end)
+
+]=],
+    ["V5.1"] = [=[
+local Players = game:GetService("Players")  
+local UserInputService = game:GetService("UserInputService")  
+local TweenService = game:GetService("TweenService")  
+  
+local player = Players.LocalPlayer  
+local playerGui = game:GetService("CoreGui")  
+  
+-- CONFIG  
+local HUB_NAME = "Ch2HubV5.1"  
+  
+-- THEMES  
+local themes = {  
+    Dark     = {bg=Color3.fromRGB(20,20,20), button=Color3.fromRGB(40,40,40), hover=Color3.fromRGB(60,60,60), accent=Color3.fromRGB(0,150,255), text=Color3.fromRGB(255,255,255)},  
+    Light    = {bg=Color3.fromRGB(245,245,245), button=Color3.fromRGB(215,215,215), hover=Color3.fromRGB(180,180,180), accent=Color3.fromRGB(0,100,255), text=Color3.fromRGB(0,0,0)},  
+    Neon     = {bg=Color3.fromRGB(5,5,15), button=Color3.fromRGB(30,0,60), hover=Color3.fromRGB(60,0,120), accent=Color3.fromRGB(255,0,255), text=Color3.fromRGB(255,255,255)},  
+    Forest   = {bg=Color3.fromRGB(10,35,20), button=Color3.fromRGB(25,65,35), hover=Color3.fromRGB(40,100,60), accent=Color3.fromRGB(0,255,120), text=Color3.fromRGB(210,255,230)},  
+    Sunset   = {bg=Color3.fromRGB(80,30,20), button=Color3.fromRGB(120,50,35), hover=Color3.fromRGB(150,70,50), accent=Color3.fromRGB(255,120,60), text=Color3.fromRGB(255,220,200)},  
+    Ocean    = {bg=Color3.fromRGB(10,50,80), button=Color3.fromRGB(15,70,110), hover=Color3.fromRGB(30,100,150), accent=Color3.fromRGB(0,200,255), text=Color3.fromRGB(220,255,255)},  
+    Crimson  = {bg=Color3.fromRGB(45,0,0), button=Color3.fromRGB(75,10,10), hover=Color3.fromRGB(100,20,20), accent=Color3.fromRGB(255,70,70), text=Color3.fromRGB(255,230,230)},  
+    Midnight = {bg=Color3.fromRGB(12,12,30), button=Color3.fromRGB(30,30,60), hover=Color3.fromRGB(60,60,100), accent=Color3.fromRGB(140,0,255), text=Color3.fromRGB(220,220,255)}  
+}  
+local themeNames = {}  
+for k in pairs(themes) do table.insert(themeNames, k) end  
+local themeIndex = 1  
+local currentTheme = themes.Dark  
+  
+-- ITEMS  
+local items = {  
+    "Spark Plug", "Gasoline can", "Boat Steering Wheel", "PadLock Key",  
+    "Boat Key", "Security key", "Crowbar", "Cutting pliers", "Safe Key",  
+    "Hand Wheel", "Door Handle"  
+}  
+  
+-- FAVORITES  
+local favorites = {}  
+  
+-- KEYBINDS  
+local keybinds = {  
+    ["1"] = "Spark Plug",  
+    ["2"] = "Gasoline can",  
+    ["3"] = "Boat Steering Wheel",  
+    ["4"] = "PadLock Key",  
+    ["5"] = "Boat Key",  
+    ["6"] = "Security key",  
+    ["7"] = "Crowbar",  
+    ["8"] = "Cutting pliers",  
+    ["9"] = "Safe Key",  
+    ["F"] = "Door Handle",  
+    ["G"] = "BringAll"  
+}  
+  
+-- UTILS  
+local function getChar() return player.Character or player.CharacterAdded:Wait() end  
+local function safeTween(obj, t, goal) TweenService:Create(obj, TweenInfo.new(t, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), goal):Play() end  
+  
+-- NOTIFICATIONS  
+local notificationQueue, noteActive = {}, false  
+local noteLabel  
+local function notify(msg, color)  
+    table.insert(notificationQueue, {msg=msg, color=color or currentTheme.text})  
+    if noteActive then return end  
+    noteActive = true  
+    while #notificationQueue > 0 do  
+        local n = table.remove(notificationQueue, 1)  
+        noteLabel.Text = n.msg  
+        noteLabel.TextColor3 = n.color  
+        safeTween(noteLabel, 0.2, {TextTransparency=0})  
+        task.wait(1.5)  
+        safeTween(noteLabel, 0.2, {TextTransparency=1})  
+        task.wait(0.1)  
+    end  
+    noteActive = false  
+end  
+  
+-- BRING ITEM  
+local function bringItem(name)  
+    local char = getChar()  
+    local root = char:FindFirstChild("HumanoidRootPart")  
+    if not root then notify("❌ HumanoidRootPart not found!", Color3.fromRGB(255,100,100)) return end  
+    local t = workspace:FindFirstChild(name, true)  
+    if not t then notify("❌ "..name.." not found!", Color3.fromRGB(255,100,100)) return end  
+    if t:IsA("Model") and t.PrimaryPart then  
+        t:SetPrimaryPartCFrame(root.CFrame + Vector3.new(0,3,0))  
+    elseif t:IsA("BasePart") then  
+        t.CFrame = root.CFrame + Vector3.new(0,3,0)  
+    end  
+    notify("✅ "..name.." brought!", Color3.fromRGB(100,255,100))  
+end  
+  
+-- GUI  
+local gui = Instance.new("ScreenGui", playerGui)  
+gui.Name = HUB_NAME  
+gui.ResetOnSpawn = false  
+gui.IgnoreGuiInset = true  
+  
+local frame = Instance.new("Frame", gui)  
+frame.Size = UDim2.new(0,400,0,580)  
+frame.Position = UDim2.new(0,50,0.5,-290)  
+frame.AnchorPoint = Vector2.new(0,0.5)  
+frame.BackgroundColor3 = currentTheme.bg  
+frame.BorderSizePixel = 0  
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,16)  
+  
+-- HEADER  
+local title = Instance.new("TextLabel", frame)  
+title.Size = UDim2.new(1,0,0,42)  
+title.Text = "🧰 Ch2 Hub V5.1"  
+title.Font = Enum.Font.GothamBold  
+title.TextColor3 = currentTheme.text  
+title.BackgroundTransparency = 1  
+title.TextXAlignment = Enum.TextXAlignment.Left  
+title.TextSize = 36  
+  
+-- NOTIFICATION LABEL  
+noteLabel = Instance.new("TextLabel", frame)  
+noteLabel.Size = UDim2.new(1,0,0,28)  
+noteLabel.Position = UDim2.new(0,0,0,-30)  
+noteLabel.Font = Enum.Font.GothamBold  
+noteLabel.TextScaled = true  
+noteLabel.TextTransparency = 1  
+noteLabel.BackgroundTransparency = 1  
+noteLabel.TextColor3 = currentTheme.text  
+  
+-- SEARCH  
+local search = Instance.new("TextBox", frame)  
+search.Size = UDim2.new(1,0,0,42)  
+search.Position = UDim2.new(0,0,0,50)  
+search.PlaceholderText = "🔍 Search items..."  
+search.Font = Enum.Font.Gotham  
+search.TextColor3 = currentTheme.text  
+search.BackgroundColor3 = currentTheme.button  
+Instance.new("UICorner", search).CornerRadius = UDim.new(0,6)  
+search.ClearTextOnFocus = false  
+  
+-- SCROLL FRAME  
+local scroll = Instance.new("ScrollingFrame", frame)  
+scroll.Size = UDim2.new(1,0,1,-220)  
+scroll.Position = UDim2.new(0,0,0,100)  
+scroll.BackgroundTransparency = 1  
+scroll.ScrollBarThickness = 6  
+local layout = Instance.new("UIListLayout", scroll)  
+layout.Padding = UDim.new(0,6)  
+layout.SortOrder = Enum.SortOrder.LayoutOrder  
+  
+-- ITEM BUTTONS  
+local buttons = {}  
+for _,name in ipairs(items) do  
+    local holder = Instance.new("Frame", scroll)  
+    holder.Size = UDim2.new(1,0,0,36)  
+    holder.BackgroundTransparency = 1  
+  
+    local btn = Instance.new("TextButton", holder)  
+    btn.Size = UDim2.new(1,-44,1,0)  
+    btn.Font = Enum.Font.GothamSemibold  
+    btn.TextColor3 = currentTheme.text  
+    btn.TextSize = 20  
+    btn.BackgroundColor3 = currentTheme.button  
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,6)  
+    btn.Text = "📦 "..name  
+    -- append keybind if exists  
+    for k,v in pairs(keybinds) do  
+        if v == name then btn.Text = btn.Text.." ["..k.."]" end  
+    end  
+  
+    local favBtn = Instance.new("TextButton", holder)  
+    favBtn.Size = UDim2.new(0,36,1,0)  
+    favBtn.Position = UDim2.new(1,-40,0,0)  
+    favBtn.Text = "★"  
+    favBtn.Font = Enum.Font.GothamBold  
+    favBtn.TextSize = 20  
+    favBtn.TextColor3 = Color3.fromRGB(200,200,0)  
+    favBtn.BackgroundColor3 = currentTheme.button  
+    Instance.new("UICorner", favBtn).CornerRadius = UDim.new(0,6)  
+
+    -- FAVORITE PULSE EFFECT  
+    favBtn.MouseButton1Click:Connect(function()  
+        favorites[name] = not favorites[name]  
+        if favorites[name] then  
+            favBtn.TextColor3 = currentTheme.accent  
+            notify("★ Added "..name)  
+            task.spawn(function()  
+                while favorites[name] do  
+                    for i = 0,1,0.03 do  
+                        if not favorites[name] then break end  
+                        local r = currentTheme.accent.R * (1 + 0.2*math.sin(i*math.pi*2))  
+                        local g = currentTheme.accent.G * (1 + 0.2*math.sin(i*math.pi*2))  
+                        local b = currentTheme.accent.B * (1 + 0.2*math.sin(i*math.pi*2))  
+                        favBtn.TextColor3 = Color3.new(math.clamp(r,0,1), math.clamp(g,0,1), math.clamp(b,0,1))  
+                        task.wait(0.03)  
+                    end  
+                end  
+            end)  
+        else  
+            favBtn.TextColor3 = Color3.fromRGB(200,200,0)  
+            notify("★ Removed "..name)  
+        end  
+    end)  
+
+    btn.MouseButton1Click:Connect(function() bringItem(name) end)  
+    btn.MouseEnter:Connect(function() btn.BackgroundColor3 = currentTheme.hover end)  
+    btn.MouseLeave:Connect(function() btn.BackgroundColor3 = currentTheme.button end)  
+
+    table.insert(buttons, holder)  
+end  
+  
+-- FAST SEARCH  
+search:GetPropertyChangedSignal("Text"):Connect(function()  
+    local t = string.lower(search.Text)  
+    for _,b in ipairs(buttons) do  
+        local txt = b:FindFirstChildOfClass("TextButton").Text  
+        b.Visible = string.find(string.lower(txt), t) ~= nil  
+    end  
+end)  
+  
+-- THEME SWITCHER  
+local themeBtn = Instance.new("TextButton", frame)  
+themeBtn.Size = UDim2.new(0,120,0,36)  
+themeBtn.Position = UDim2.new(1,-140,0,6)  
+themeBtn.Text = "🎨 Theme"  
+themeBtn.Font = Enum.Font.GothamBold  
+themeBtn.TextSize = 16  
+themeBtn.TextColor3 = Color3.new(1,1,1)  
+Instance.new("UICorner", themeBtn).CornerRadius = UDim.new(0,6)  
+local function applyTheme()  
+    currentTheme = themes[themeNames[themeIndex]]  
+    frame.BackgroundColor3 = currentTheme.bg  
+    title.TextColor3 = currentTheme.text  
+    search.TextColor3 = currentTheme.text  
+    search.BackgroundColor3 = currentTheme.button  
+    themeBtn.BackgroundColor3 = currentTheme.accent  
+    for _,b in ipairs(buttons) do  
+        local btn = b:FindFirstChildOfClass("TextButton")  
+        btn.BackgroundColor3 = currentTheme.button  
+        btn.TextColor3 = currentTheme.text  
+        local fav = b:FindFirstChildOfClass("TextButton", true)  
+        if fav then fav.BackgroundColor3 = currentTheme.button end  
+    end  
+end  
+themeBtn.MouseButton1Click:Connect(function()  
+    themeIndex = themeIndex % #themeNames + 1  
+    notify("🎨 Theme: "..themeNames[themeIndex])  
+    applyTheme()  
+end)  
+applyTheme()  
+  
+-- BRING ALL BUTTON  
+local bringAll = Instance.new("TextButton", frame)  
+bringAll.Size = UDim2.new(1,0,0,44)  
+bringAll.Position = UDim2.new(0,0,1,-60)  
+bringAll.Text = "🎯 Bring All Items [G]"  
+bringAll.Font = Enum.Font.GothamBold  
+bringAll.TextColor3 = Color3.fromRGB(255,255,255)  
+bringAll.BackgroundColor3 = currentTheme.accent  
+bringAll.TextSize = 20  
+Instance.new("UICorner", bringAll).CornerRadius = UDim.new(0,8)  
+bringAll.MouseButton1Click:Connect(function()  
+    for _,name in ipairs(items) do bringItem(name) end  
+    notify("🎯 Bring All triggered by G")  
+end)  
+  
+-- CREDITS  
+local credits = Instance.new("TextLabel", frame)  
+credits.Size = UDim2.new(1,-20,0,60)  
+credits.Position = UDim2.new(0,10,1,-120)  
+credits.BackgroundTransparency = 1  
+credits.TextColor3 = currentTheme.text  
+credits.TextSize = 16  
+credits.Font = Enum.Font.Gotham  
+credits.TextWrapped = true  
+credits.Text = "Made by heyitsmeghost\nOriginally made by emottas_show"  
+  
+-- MOBILE TOGGLE  
+if UserInputService.TouchEnabled then  
+    local toggle = Instance.new("TextButton", gui)  
+    toggle.Size = UDim2.new(0,50,0,50)  
+    toggle.Position = UDim2.new(1,-60,0,10)  
+    toggle.Text = "🧰"  
+    toggle.Font = Enum.Font.GothamBold  
+    toggle.TextSize = 28  
+    toggle.BackgroundColor3 = currentTheme.accent  
+    toggle.TextColor3 = Color3.new(1,1,1)  
+    Instance.new("UICorner", toggle).CornerRadius = UDim.new(0,12)  
+    local vis = true  
+    toggle.MouseButton1Click:Connect(function()  
+        vis = not vis  
+        frame.Visible = vis  
+    end)  
+end  
+  
+-- DRAGGING  
+local dragging, dragStart, startPos  
+frame.InputBegan:Connect(function(input)  
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then  
+        dragging = true  
+        dragStart = input.Position  
+        startPos = frame.Position  
+        input.Changed:Connect(function()  
+            if input.UserInputState == Enum.UserInputState.End then dragging=false end  
+        end)  
+    end  
+end)  
+UserInputService.InputChanged:Connect(function(input)  
+    if dragging then  
+        local delta = input.Position - dragStart  
+        frame.Position = UDim2.new(0, startPos.X.Offset + delta.X, 0, startPos.Y.Offset + delta.Y)  
+    end  
+end)  
+  
+-- KEYBINDS LISTENER  
+UserInputService.InputBegan:Connect(function(input, processed)  
+    if processed then return end  
+    local key = input.KeyCode.Name  
+    local itemName = keybinds[key]  
+    if itemName then  
+        if itemName == "BringAll" then  
+            for _,name in ipairs(items) do bringItem(name) end  
+            notify("🎯 Bring All triggered by G")  
+        else  
+            bringItem(itemName)  
+            notify("📦 "..itemName.." triggered by "..key)  
+        end  
+    end  
+end)  
+  
+return nil
+]=],
+}
+
+local LEGACY = {
+    V1 = {
+        Version = "V1", Type = "Original prototype", Title = "Original Prototype",
+        Status = "Original source embedded", Recreation = false,
+        SourceStatus = "Original V1 source is embedded in this archive launcher.", RealScriptName = "Ch2HubV1",
+        Items = {CH2_ITEMS[1], CH2_ITEMS[2], CH2_ITEMS[3], CH2_ITEMS[4], CH2_ITEMS[5]},
+        Features = {"5-item prototype", "Simple item buttons", "Basic bring logic", "Early individual shortcuts"},
+        Changes = "The first documented Ch2 Hub direction: a compact prototype centred on a small item roster and direct item buttons.",
+        Limitations = "The supplied original V1 source is launched directly from the archive; its original quirks are preserved.",
+        Keybinds = true, HistoricalTeleport = false,
+    },
+    V2 = {
+        Version = "V2", Type = "V1 expansion", Title = "V2 Recreation • Lost Media",
+        Status = "Recreation • Original Source Lost", Recreation = true,
+        SourceStatus = "Original V2 source is currently lost media.", RealScriptName = "Ch2HubV2",
+        Items = {CH2_ITEMS[1], CH2_ITEMS[2], CH2_ITEMS[3], CH2_ITEMS[4], CH2_ITEMS[5], CH2_ITEMS[6], CH2_ITEMS[7], CH2_ITEMS[8]},
+        Features = {"V1 design direction", "Scrolling system", "Search", "Expanded prototype direction"},
+        Changes = "V2 retained the V1 design direction while adding scrolling and search, making it the bridge between the original prototype and OG V3.",
+        Limitations = "No claim is made that this recreated eight-item roster is the original V2 roster. The original V2 source has not been recovered here.",
+        Keybinds = true, HistoricalTeleport = false,
+    },
+    ["OG V3"] = {
+        Version = "OG V3", Type = "Foundational hub", Title = "OG V3",
+        Status = "Original source embedded", Recreation = false,
+        SourceStatus = "Original OG V3 source is embedded in this archive launcher.", RealScriptName = "Ch2HubV3",
+        Items = CH2_ITEMS,
+        Features = {"11 items", "Search", "Scrolling", "Notifications", "Bring All", "Drag/resize", "Mobile toggle"},
+        Changes = "OG V3 is treated as the foundational jump where the hub became a fuller item-management interface.",
+        Limitations = "The original supplied source is available directly from the archive launcher.",
+        Keybinds = true, HistoricalTeleport = false,
+    },
+    ["V3 Remastered"] = {
+        Version = "V3 Remastered", Type = "V3 Legacy / Remastered", Title = "V3 Legacy / Remastered",
+        Status = "Original source embedded", Recreation = false,
+        SourceStatus = "Original V3 Remastered source is embedded in this archive launcher.", RealScriptName = "Ch2HubV3Remastered",
+        Items = CH2_ITEMS,
+        Features = {"OG V3 core", "Polished presentation", "Refined cards", "Notifications", "Search", "Bring All", "Mobile support"},
+        Changes = "A polished remake of the OG V3 direction, keeping the same core hub idea while presenting it more cleanly.",
+        Limitations = "The supplied original V3 Remastered source is launched directly from the archive; its historical keybind mapping is preserved.",
+        Keybinds = true, HistoricalTeleport = false,
+    },
+    V4 = {
+        Version = "V4", Type = "Feature expansion", Title = "V4",
+        Status = "Original source embedded", Recreation = false,
+        SourceStatus = "Original V4 source is embedded in this archive launcher.", RealScriptName = "Ch2HubV4",
+        Items = CH2_ITEMS,
+        Features = {"11 items", "Themes", "Teleport-to-item", "Settings persistence direction", "Credits", "Expanded UI"},
+        Changes = "V4 is the historical expansion point where themes and teleport-to-item were part of the documented feature set.",
+        Limitations = "V4 keeps its historical teleport-to-item behavior because this is the original V4 source; Ultimate itself remains Bring-only.",
+        Keybinds = true, HistoricalTeleport = true,
+    },
+    V5 = {
+        Version = "V5", Type = "Streamlined redesign", Title = "V5",
+        Status = "Original source embedded", Recreation = false,
+        SourceStatus = "Original V5 source is embedded in this archive launcher.", RealScriptName = "Ch2HubV5",
+        Items = CH2_ITEMS,
+        Features = {"Streamlined redesign", "Cleaner/larger presentation", "Themes", "Search", "Notifications", "Bring All", "Teleport removed"},
+        Changes = "V5 is represented as the streamlined stage after the earlier teleport-focused direction was removed.",
+        Limitations = "The original supplied source is available directly from the archive launcher.",
+        Keybinds = true, HistoricalTeleport = false,
+    },
+    ["V5.1"] = {
+        Version = "V5.1", Type = "Customization refinement", Title = "V5.1",
+        Status = "Original source embedded", Recreation = false,
+        SourceStatus = "Original V5.1 source is embedded in this archive launcher.", RealScriptName = "Ch2HubV5.1",
+        Items = CH2_ITEMS,
+        Features = {"Favorites", "Themes", "Search", "Notifications", "Mobile support", "Refined keybind direction"},
+        Changes = "V5.1 is the documented customization-focused stage leading into the Ultimate architecture.",
+        Limitations = "The original supplied source is available directly from the archive launcher.",
+        Keybinds = true, HistoricalTeleport = false,
+    },
+    V6 = {
+        Version = "V6", Type = "Planned Release / Scrapped Version", Title = "V6",
+        Status = "Planned / Scrapped", Recreation = false,
+        SourceStatus = "No completed V6 source is claimed or included.", RealScriptName = "Ch2HubV6",
+        Items = CH2_ITEMS,
+        Features = {"Planned successor to V5.1", "Next numbered-release direction", "Superseded by Ultimate Edition"},
+        Changes = "V6 was planned as the next numbered release after V5.1. Development was later scrapped when the project direction shifted toward the much larger Ultimate Edition.",
+        Limitations = "V6 was never completed as a finished release in this archive, so no original V6 implementation is offered.",
+        Keybinds = false, HistoricalTeleport = false,
+    },
+    Ultimate = {
+        Version = "Ultimate", Type = "Current culmination", Title = "Ultimate Edition",
+        Status = "Current live implementation", Recreation = false,
+        SourceStatus = "Current implementation", RealScriptName = nil,
+        Items = CH2_ITEMS,
+        Features = {"CH2 + GRANNY RETRO HUB", "V3 + V3 Legacy two-core foundation", "11 CH2 entries", "32 GRANNY RETRO HUB entries", "Duplicate-safe Bring All", "Search", "Categories", "Favorites", "A-Z sorting", "8 themes", "Lite Mode", "Responsive UI", "UI scaling", "Keybind editor", "Dual Local/Remote bring method", "Self-contained Original Archive + recreations"},
+        Changes = "Ultimate combines the established Ch2 Hub lineage with GRANNY RETRO HUB and the newer customization/bring systems.",
+        Limitations = "LocalPlayer attributes are session-level. Use portable settings if you need to carry preferences manually.",
+        Keybinds = true, HistoricalTeleport = false,
+    },
+}
+
+local LEGACY_ORDER = {"V1", "V2", "OG V3", "V3 Remastered", "V4", "V5", "V5.1", "V6", "Ultimate"}
+
+
+--==================================================
+-- STATE
+--==================================================
+
+local State = {
+    Mode = "Ch2",
+    Theme = "Dark",
+    BringMethod = "Local",
+    LegacyPreview = false,
+    Version = "Ultimate",
+    LiteMode = false,
+    Visible = true,
+    Minimized = false,
+    Search = "",
+    Category = "All",
+    FavoritesOnly = false,
+    SortAZ = false,
+    Scale = 1,
+    Position = nil,
+    Favorites = {},
+    LayoutMode = "Auto",
+    ChosenLegacy = "Ultimate",
+    Keybinds = {},
+    ItemKeys = {},
+}
+
+local Connections = {}
+local KeybindButtons = {}
+
+local EDIT_KEYS = {"None", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Zero", "Y", "U", "I", "O", "P", "H", "J", "K", "N", "M"}
+
+for keyName, itemName in pairs(CH2_KEYBINDS) do
+    State.Keybinds[keyName] = itemName
+end
+for _, item in ipairs(CH2_ITEMS) do
+    for keyName, itemName in pairs(State.Keybinds) do
+        if itemName == item.Name then
+            State.ItemKeys[item.Name] = keyName
+            break
+        end
+    end
+end
+local CardConnections = {}
+local ActiveTween = nil
+
+--==================================================
+-- FORWARD DECLARATIONS
+--==================================================
+
+local buildItemList
+local rebuildCategories
+local applyTheme
+local applyLayout
+local refreshStatus
+local showPage
+local notify
+local bringItem
+local bringAll
+local updateKeybindButtons
+local updateLegacyDetails
+local restoreUltimate
+local findInstalledLegacyScript
+local launchInstalledLegacy
+local enterLegacyRecreation
+local switchMode
+
+--==================================================
+-- UTILITY
+--==================================================
+
+local function theme()
+    return THEMES[State.Theme] or THEMES.Dark
+end
+
+local function saveSession()
+    pcall(function()
+        LocalPlayer:SetAttribute("Ch2Ultimate_Theme", State.Theme)
+        LocalPlayer:SetAttribute("Ch2Ultimate_Lite", State.LiteMode)
+        LocalPlayer:SetAttribute("Ch2Ultimate_Sort", State.SortAZ)
+        LocalPlayer:SetAttribute("Ch2Ultimate_FavsOnly", State.FavoritesOnly)
+        LocalPlayer:SetAttribute("Ch2Ultimate_Scale", State.Scale)
+        LocalPlayer:SetAttribute("Ch2Ultimate_Mode", State.Mode)
+        LocalPlayer:SetAttribute("Ch2Ultimate_LayoutMode", State.LayoutMode)
+        LocalPlayer:SetAttribute("Ch2Ultimate_BringMethod", State.BringMethod)
+        if State.Position then
+            LocalPlayer:SetAttribute("Ch2Ultimate_PosX", State.Position.X.Offset)
+            LocalPlayer:SetAttribute("Ch2Ultimate_PosY", State.Position.Y.Offset)
+        end
+        local bindings = {}
+        for _, item in ipairs(CH2_ITEMS) do
+            local key = State.ItemKeys[item.Name] or "None"
+            table.insert(bindings, item.Name .. "=" .. key)
+        end
+        LocalPlayer:SetAttribute("Ch2Ultimate_Keybinds", table.concat(bindings, ";"))
+
+        local fav = {}
+        for key, value in pairs(State.Favorites) do
+            if value then table.insert(fav, key) end
+        end
+        LocalPlayer:SetAttribute("Ch2Ultimate_Favorites", table.concat(fav, ","))
+    end)
+end
+
+local function loadSession()
+    pcall(function()
+        local savedTheme = LocalPlayer:GetAttribute("Ch2Ultimate_Theme")
+        local savedLite = LocalPlayer:GetAttribute("Ch2Ultimate_Lite")
+        local savedSort = LocalPlayer:GetAttribute("Ch2Ultimate_Sort")
+        local savedFavsOnly = LocalPlayer:GetAttribute("Ch2Ultimate_FavsOnly")
+        local savedScale = LocalPlayer:GetAttribute("Ch2Ultimate_Scale")
+        local savedMode = LocalPlayer:GetAttribute("Ch2Ultimate_Mode")
+        local savedLayoutMode = LocalPlayer:GetAttribute("Ch2Ultimate_LayoutMode")
+        local px = LocalPlayer:GetAttribute("Ch2Ultimate_PosX")
+        local py = LocalPlayer:GetAttribute("Ch2Ultimate_PosY")
+
+        if typeof(savedTheme) == "string" and THEMES[savedTheme] then State.Theme = savedTheme end
+        if typeof(savedLite) == "boolean" then State.LiteMode = savedLite end
+        if typeof(savedSort) == "boolean" then State.SortAZ = savedSort end
+        if typeof(savedFavsOnly) == "boolean" then State.FavoritesOnly = savedFavsOnly end
+        if typeof(savedScale) == "number" then State.Scale = math.clamp(savedScale, 0.75, 1.25) end
+        if savedMode == "Ch2" or savedMode == "Granny" then State.Mode = savedMode end
+        if savedLayoutMode == "Auto" or savedLayoutMode == "Mobile" or savedLayoutMode == "Desktop" then State.LayoutMode = savedLayoutMode end
+        local savedBringMethod = LocalPlayer:GetAttribute("Ch2Ultimate_BringMethod")
+        if savedBringMethod == "Local" or savedBringMethod == "Remote" then State.BringMethod = savedBringMethod end
+        if typeof(px) == "number" and typeof(py) == "number" then
+            State.Position = UDim2.new(0.5, px, 0.5, py)
+        end
+
+        local bindingString = LocalPlayer:GetAttribute("Ch2Ultimate_Keybinds")
+        if typeof(bindingString) == "string" and bindingString ~= "" then
+            table.clear(State.Keybinds)
+            for _, savedItem in ipairs(CH2_ITEMS) do
+                State.ItemKeys[savedItem.Name] = "None"
+            end
+            for pair in string.gmatch(bindingString, "[^;]+") do
+                local itemName, keyName = string.match(pair, "^(.-)=(.+)$")
+                if itemName and keyName then
+                    local validItem = false
+                    for _, item in ipairs(CH2_ITEMS) do
+                        if item.Name == itemName then
+                            validItem = true
+                            break
+                        end
+                    end
+                    if validItem and (keyName == "None" or not State.Keybinds[keyName]) then
+                        local oldKey = State.ItemKeys[itemName]
+                        if oldKey and oldKey ~= "None" then State.Keybinds[oldKey] = nil end
+                        State.ItemKeys[itemName] = keyName
+                        if keyName ~= "None" then State.Keybinds[keyName] = itemName end
+                    end
+                end
+            end
+        end
+
+        local favString = LocalPlayer:GetAttribute("Ch2Ultimate_Favorites")
+        if typeof(favString) == "string" and favString ~= "" then
+            for token in string.gmatch(favString, "[^,]+") do
+                State.Favorites[token] = true
+            end
+        end
+    end)
+end
+
+local function disconnectAll(list)
+    for _, connection in ipairs(list) do
+        if connection and connection.Disconnect then
+            connection:Disconnect()
+        end
+    end
+    table.clear(list)
+end
+
+local function tween(instance, info, properties)
+    local t = TweenService:Create(instance, info, properties)
+    t:Play()
+    return t
+end
+
+local function normalize(s)
+    return string.lower(tostring(s))
+end
+
+local function isTextBoxFocused()
+    return UserInputService:GetFocusedTextBox() ~= nil
+end
+
+local function getRootPart()
+    local character = LocalPlayer.Character
+    if not character then
+        return nil
+    end
+
+    return character:FindFirstChild("HumanoidRootPart")
+        or character:FindFirstChild("UpperTorso")
+        or character:FindFirstChild("Torso")
+end
+
+local function objectHasPart(instance)
+    if instance:IsA("BasePart") then
+        return true
+    end
+
+    if instance:IsA("Model") or instance:IsA("Tool") or instance:IsA("Folder") then
+        return instance:FindFirstChildWhichIsA("BasePart", true) ~= nil
+    end
+
+    return false
+end
+
+local function getMovementPart(instance)
+    if instance:IsA("BasePart") then
+        return instance
+    end
+
+    if instance:IsA("Tool") then
+        local handle = instance:FindFirstChild("Handle")
+        if handle and handle:IsA("BasePart") then
+            return handle
+        end
+    end
+
+    return instance:FindFirstChildWhichIsA("BasePart", true)
+end
+
+local function isExcludedFromNestedResult(candidate, exactName)
+    local parent = candidate.Parent
+    while parent and parent ~= workspace do
+        if (parent:IsA("Model") or parent:IsA("Tool")) and parent.Name == exactName then
+            return true
+        end
+        parent = parent.Parent
+    end
+    return false
+end
+
+local function findMatches(itemName)
+    local exact = {}
+    local loose = {}
+
+    for _, instance in ipairs(workspace:GetDescendants()) do
+        if instance.Name == itemName and not isExcludedFromNestedResult(instance, itemName) and objectHasPart(instance) then
+            table.insert(exact, instance)
+        end
+    end
+
+    if #exact > 0 then
+        return exact
+    end
+
+    local wanted = normalize(itemName)
+    for _, instance in ipairs(workspace:GetDescendants()) do
+        if normalize(instance.Name) == wanted and not isExcludedFromNestedResult(instance, instance.Name) and objectHasPart(instance) then
+            table.insert(loose, instance)
+        end
+    end
+
+    return loose
+end
+
+local function findFirst(itemName, used)
+    local matches = findMatches(itemName)
+    for _, instance in ipairs(matches) do
+        if not used or not used[instance] then
+            return instance
+        end
+    end
+    return nil
+end
+
+local function moveInstance(instance)
+    local root = getRootPart()
+    if not root then
+        return false, "Character root not found"
+    end
+
+    if not instance or not instance.Parent then
+        return false, "Item no longer exists"
+    end
+
+    local destination = root.CFrame * CFrame.new(0, 3, 0)
+
+    local ok, err = pcall(function()
+        if instance:IsA("Model") then
+            instance:PivotTo(destination)
+        elseif instance:IsA("BasePart") then
+            instance.CFrame = destination
+        elseif instance:IsA("Tool") then
+            local handle = instance:FindFirstChild("Handle")
+            if handle and handle:IsA("BasePart") then
+                handle.CFrame = destination
+            else
+                local part = getMovementPart(instance)
+                if not part then
+                    error("No movable BasePart found")
+                end
+                part.CFrame = destination
+            end
+        else
+            local model = instance:FindFirstAncestorWhichIsA("Model")
+            if model then
+                model:PivotTo(destination)
+            else
+                local part = getMovementPart(instance)
+                if not part then
+                    error("No movable BasePart found")
+                end
+                part.CFrame = destination
+            end
+        end
+    end)
+
+    if not ok then
+        return false, tostring(err)
+    end
+
+    return true, "Brought"
+end
+
+local function itemExists(itemName)
+    return #findMatches(itemName) > 0
+end
+
+loadSession()
+
+--==================================================
+-- SCREEN GUI
+--==================================================
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = HUB_NAME
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.DisplayOrder = 999
+ScreenGui.Parent = CoreGui
+
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.AnchorPoint = Vector2.new(0.5, 0.5)
+Main.Position = UDim2.fromScale(0.5, 0.5)
+Main.Size = UDim2.fromOffset(720, 610)
+Main.BackgroundColor3 = theme().Background
+Main.BorderSizePixel = 0
+Main.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 16)
+MainCorner.Parent = Main
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Thickness = 1
+MainStroke.Color = theme().Stroke
+MainStroke.Parent = Main
+
+local Scale = Instance.new("UIScale")
+Scale.Scale = State.Scale
+Scale.Parent = Main
+
+local Topbar = Instance.new("Frame")
+Topbar.Name = "Topbar"
+Topbar.Size = UDim2.new(1, 0, 0, 58)
+Topbar.BackgroundColor3 = theme().Panel
+Topbar.BorderSizePixel = 0
+Topbar.Parent = Main
+
+local TopCorner = Instance.new("UICorner")
+TopCorner.CornerRadius = UDim.new(0, 16)
+TopCorner.Parent = Topbar
+
+local TopBottom = Instance.new("Frame")
+TopBottom.BorderSizePixel = 0
+TopBottom.Size = UDim2.new(1, 0, 0, 16)
+TopBottom.Position = UDim2.new(0, 0, 1, -16)
+TopBottom.BackgroundColor3 = theme().Panel
+TopBottom.Parent = Topbar
+
+local Title = Instance.new("TextLabel")
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.fromOffset(18, 4)
+Title.Size = UDim2.new(1, -245, 0, 31)
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 21
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.TextColor3 = theme().Text
+Title.Text = "🧰 Ch2 Hub Ultimate"
+Title.Parent = Topbar
+
+local Subtitle = Instance.new("TextLabel")
+Subtitle.BackgroundTransparency = 1
+Subtitle.Position = UDim2.fromOffset(19, 33)
+Subtitle.Size = UDim2.new(1, -250, 0, 18)
+Subtitle.Font = Enum.Font.Gotham
+Subtitle.TextSize = 11
+Subtitle.TextXAlignment = Enum.TextXAlignment.Left
+Subtitle.TextColor3 = theme().SubText
+Subtitle.Text = "Ultimate Edition • rebuilt single LocalScript"
+Subtitle.Parent = Topbar
+
+local function topButton(text, width)
+    local button = Instance.new("TextButton")
+    button.AutoButtonColor = false
+    button.Size = UDim2.fromOffset(width, 32)
+    button.BackgroundColor3 = theme().Button
+    button.BorderSizePixel = 0
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 13
+    button.TextColor3 = theme().Text
+    button.Text = text
+    button.Parent = Topbar
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 9)
+    corner.Parent = button
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = theme().Stroke
+    stroke.Thickness = 1
+    stroke.Parent = button
+
+    button.MouseEnter:Connect(function()
+        tween(button, TweenInfo.new(0.12), {BackgroundColor3 = theme().Hover})
+    end)
+
+    button.MouseLeave:Connect(function()
+        tween(button, TweenInfo.new(0.12), {BackgroundColor3 = theme().Button})
+    end)
+
+    return button
+end
+
+local ModeButton = topButton("CH2", 74)
+ModeButton.Position = UDim2.new(1, -224, 0, 13)
+
+local MinButton = topButton("—", 34)
+MinButton.Position = UDim2.new(1, -142, 0, 13)
+
+local CloseButton = topButton("×", 34)
+CloseButton.Position = UDim2.new(1, -98, 0, 13)
+
+local ToggleButton = topButton("L", 42)
+ToggleButton.Position = UDim2.new(1, -50, 0, 13)
+
+local Content = Instance.new("Frame")
+Content.Name = "Content"
+Content.BackgroundTransparency = 1
+Content.Position = UDim2.fromOffset(14, 68)
+Content.Size = UDim2.new(1, -28, 1, -80)
+Content.Parent = Main
+
+local Sidebar = Instance.new("Frame")
+Sidebar.Name = "Sidebar"
+Sidebar.Size = UDim2.fromOffset(132, 1)
+Sidebar.AutomaticSize = Enum.AutomaticSize.Y
+Sidebar.BackgroundColor3 = theme().Panel
+Sidebar.BorderSizePixel = 0
+Sidebar.Parent = Content
+
+local SideCorner = Instance.new("UICorner")
+SideCorner.CornerRadius = UDim.new(0, 12)
+SideCorner.Parent = Sidebar
+
+local SidePadding = Instance.new("UIPadding")
+SidePadding.PaddingTop = UDim.new(0, 10)
+SidePadding.PaddingBottom = UDim.new(0, 10)
+SidePadding.PaddingLeft = UDim.new(0, 9)
+SidePadding.PaddingRight = UDim.new(0, 9)
+SidePadding.Parent = Sidebar
+
+local SideList = Instance.new("UIListLayout")
+SideList.Padding = UDim.new(0, 7)
+SideList.FillDirection = Enum.FillDirection.Vertical
+SideList.SortOrder = Enum.SortOrder.LayoutOrder
+SideList.Parent = Sidebar
+
+local Pages = Instance.new("Frame")
+Pages.Name = "Pages"
+Pages.Position = UDim2.new(0, 142, 0, 0)
+Pages.Size = UDim2.new(1, -142, 1, 0)
+Pages.BackgroundTransparency = 1
+Pages.Parent = Content
+
+local MainPage = Instance.new("Frame")
+MainPage.Name = "ItemsPage"
+MainPage.Size = UDim2.fromScale(1, 1)
+MainPage.BackgroundTransparency = 1
+MainPage.Parent = Pages
+
+local SettingsPage = Instance.new("Frame")
+SettingsPage.Name = "SettingsPage"
+SettingsPage.Size = UDim2.fromScale(1, 1)
+SettingsPage.BackgroundTransparency = 1
+SettingsPage.Visible = false
+SettingsPage.Parent = Pages
+
+local AboutPage = Instance.new("Frame")
+AboutPage.Name = "AboutPage"
+AboutPage.Size = UDim2.fromScale(1, 1)
+AboutPage.BackgroundTransparency = 1
+AboutPage.Visible = false
+AboutPage.Parent = Pages
+
+local LegacyPage = Instance.new("Frame")
+LegacyPage.Name = "LegacyPage"
+LegacyPage.Size = UDim2.fromScale(1, 1)
+LegacyPage.BackgroundTransparency = 1
+LegacyPage.Visible = false
+LegacyPage.Parent = Pages
+
+--==================================================
+-- SIDEBAR
+--==================================================
+
+local SideButtons = {}
+
+local function sideButton(text, order)
+    local b = Instance.new("TextButton")
+    b.AutoButtonColor = false
+    b.Size = UDim2.new(1, 0, 0, 38)
+    b.BackgroundColor3 = theme().Button
+    b.BorderSizePixel = 0
+    b.TextColor3 = theme().Text
+    b.Font = Enum.Font.GothamMedium
+    b.TextSize = 13
+    b.Text = text
+    b.LayoutOrder = order
+    b.Parent = Sidebar
+
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 9)
+    c.Parent = b
+
+    local s = Instance.new("UIStroke")
+    s.Color = theme().Stroke
+    s.Thickness = 1
+    s.Parent = b
+
+    table.insert(SideButtons, b)
+    return b
+end
+
+local ItemsNav = sideButton("▦  Items", 1)
+local SettingsNav = sideButton("⚙  Settings", 2)
+local AboutNav = sideButton("ⓘ  About", 3)
+local LegacyNav = sideButton("◈  Legacy", 4)
+local RefreshNav = sideButton("↻  Refresh", 5)
+local HideNav = sideButton("L  Hide", 6)
+
+--==================================================
+-- ITEMS PAGE
+--==================================================
+
+local SearchBox = Instance.new("TextBox")
+SearchBox.ClearTextOnFocus = false
+SearchBox.PlaceholderText = "Search items..."
+SearchBox.Text = ""
+SearchBox.Font = Enum.Font.Gotham
+SearchBox.TextSize = 14
+SearchBox.TextColor3 = theme().Text
+SearchBox.PlaceholderColor3 = theme().SubText
+SearchBox.BackgroundColor3 = theme().Panel
+SearchBox.BorderSizePixel = 0
+SearchBox.Size = UDim2.new(1, -44, 0, 39)
+SearchBox.Position = UDim2.fromOffset(0, 0)
+SearchBox.Parent = MainPage
+
+local SearchCorner = Instance.new("UICorner")
+SearchCorner.CornerRadius = UDim.new(0, 10)
+SearchCorner.Parent = SearchBox
+
+local SearchStroke = Instance.new("UIStroke")
+SearchStroke.Color = theme().Stroke
+SearchStroke.Thickness = 1
+SearchStroke.Parent = SearchBox
+
+local ClearSearch = Instance.new("TextButton")
+ClearSearch.AutoButtonColor = false
+ClearSearch.Text = "×"
+ClearSearch.Font = Enum.Font.GothamBold
+ClearSearch.TextSize = 17
+ClearSearch.TextColor3 = theme().Text
+ClearSearch.BackgroundColor3 = theme().Button
+ClearSearch.BorderSizePixel = 0
+ClearSearch.Size = UDim2.fromOffset(38, 39)
+ClearSearch.Position = UDim2.new(1, -38, 0, 0)
+ClearSearch.Parent = MainPage
+
+local ClearCorner = Instance.new("UICorner")
+ClearCorner.CornerRadius = UDim.new(0, 10)
+ClearCorner.Parent = ClearSearch
+
+local CategoryBar = Instance.new("ScrollingFrame")
+CategoryBar.BackgroundTransparency = 1
+CategoryBar.BorderSizePixel = 0
+CategoryBar.ScrollingDirection = Enum.ScrollingDirection.X
+CategoryBar.ScrollBarThickness = 0
+CategoryBar.Position = UDim2.fromOffset(0, 46)
+CategoryBar.Size = UDim2.new(1, 0, 0, 34)
+CategoryBar.CanvasSize = UDim2.new(0, 0, 0, 34)
+CategoryBar.Parent = MainPage
+
+local CategoryList = Instance.new("UIListLayout")
+CategoryList.FillDirection = Enum.FillDirection.Horizontal
+CategoryList.SortOrder = Enum.SortOrder.LayoutOrder
+CategoryList.Padding = UDim.new(0, 6)
+CategoryList.Parent = CategoryBar
+
+local FilterBar = Instance.new("Frame")
+FilterBar.BackgroundTransparency = 1
+FilterBar.Position = UDim2.fromOffset(0, 86)
+FilterBar.Size = UDim2.new(1, 0, 0, 34)
+FilterBar.Parent = MainPage
+
+local FilterLayout = Instance.new("UIListLayout")
+FilterLayout.FillDirection = Enum.FillDirection.Horizontal
+FilterLayout.Padding = UDim.new(0, 6)
+FilterLayout.Parent = FilterBar
+
+local function smallFilter(text)
+    local b = Instance.new("TextButton")
+    b.AutoButtonColor = false
+    b.Size = UDim2.fromOffset(112, 32)
+    b.BackgroundColor3 = theme().Button
+    b.BorderSizePixel = 0
+    b.Font = Enum.Font.GothamMedium
+    b.TextSize = 12
+    b.TextColor3 = theme().Text
+    b.Text = text
+    b.Parent = FilterBar
+
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 8)
+    c.Parent = b
+
+    local s = Instance.new("UIStroke")
+    s.Color = theme().Stroke
+    s.Thickness = 1
+    s.Parent = b
+
+    b.MouseEnter:Connect(function()
+        tween(b, TweenInfo.new(0.1), {BackgroundColor3 = theme().Hover})
+    end)
+    b.MouseLeave:Connect(function()
+        tween(b, TweenInfo.new(0.1), {BackgroundColor3 = theme().Button})
+    end)
+
+    return b
+end
+
+local FavoritesFilter = smallFilter("☆ Favorites")
+local SortButton = smallFilter("A-Z Sort")
+local BringAllButton = smallFilter("Bring All [G]")
+local RefreshItemsButton = smallFilter("Refresh")
+local StatsLabel = Instance.new("TextLabel")
+StatsLabel.BackgroundTransparency = 1
+StatsLabel.Size = UDim2.new(1, -470, 0, 30)
+StatsLabel.Font = Enum.Font.Gotham
+StatsLabel.TextSize = 12
+StatsLabel.TextXAlignment = Enum.TextXAlignment.Right
+StatsLabel.TextColor3 = theme().SubText
+StatsLabel.Text = ""
+StatsLabel.Parent = FilterBar
+
+local ItemScroll = Instance.new("ScrollingFrame")
+ItemScroll.Name = "ItemScroll"
+ItemScroll.BackgroundColor3 = theme().Panel
+ItemScroll.BorderSizePixel = 0
+ItemScroll.Position = UDim2.fromOffset(0, 128)
+ItemScroll.Size = UDim2.new(1, 0, 1, -128)
+ItemScroll.ScrollBarThickness = 5
+ItemScroll.ScrollBarImageColor3 = theme().Accent
+ItemScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+ItemScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ItemScroll.Parent = MainPage
+
+local ItemCorner = Instance.new("UICorner")
+ItemCorner.CornerRadius = UDim.new(0, 12)
+ItemCorner.Parent = ItemScroll
+
+local ItemPadding = Instance.new("UIPadding")
+ItemPadding.PaddingTop = UDim.new(0, 8)
+ItemPadding.PaddingBottom = UDim.new(0, 8)
+ItemPadding.PaddingLeft = UDim.new(0, 8)
+ItemPadding.PaddingRight = UDim.new(0, 8)
+ItemPadding.Parent = ItemScroll
+
+local ItemList = Instance.new("UIListLayout")
+ItemList.Padding = UDim.new(0, 7)
+ItemList.SortOrder = Enum.SortOrder.LayoutOrder
+ItemList.Parent = ItemScroll
+
+--==================================================
+-- ACTION BUTTONS
+--==================================================
+
+local BottomBar = Instance.new("Frame")
+BottomBar.BackgroundTransparency = 1
+BottomBar.Position = UDim2.new(0, 0, 1, 3)
+BottomBar.Size = UDim2.new(1, 0, 0, 0)
+BottomBar.Visible = false
+BottomBar.Parent = MainPage
+
+--==================================================
+-- SETTINGS PAGE
+--==================================================
+
+local SettingsScroll = Instance.new("ScrollingFrame")
+SettingsScroll.BackgroundColor3 = theme().Panel
+SettingsScroll.BorderSizePixel = 0
+SettingsScroll.Size = UDim2.fromScale(1, 1)
+SettingsScroll.ScrollBarThickness = 5
+SettingsScroll.ScrollBarImageColor3 = theme().Accent
+SettingsScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+SettingsScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+SettingsScroll.Parent = SettingsPage
+
+local SettingsCorner = Instance.new("UICorner")
+SettingsCorner.CornerRadius = UDim.new(0, 12)
+SettingsCorner.Parent = SettingsScroll
+
+local SettingsPadding = Instance.new("UIPadding")
+SettingsPadding.PaddingTop = UDim.new(0, 12)
+SettingsPadding.PaddingBottom = UDim.new(0, 12)
+SettingsPadding.PaddingLeft = UDim.new(0, 12)
+SettingsPadding.PaddingRight = UDim.new(0, 12)
+SettingsPadding.Parent = SettingsScroll
+
+local SettingsList = Instance.new("UIListLayout")
+SettingsList.Padding = UDim.new(0, 9)
+SettingsList.Parent = SettingsScroll
+
+local function settingHeader(textValue)
+    local l = Instance.new("TextLabel")
+    l.BackgroundTransparency = 1
+    l.Size = UDim2.new(1, 0, 0, 28)
+    l.Font = Enum.Font.GothamBold
+    l.TextSize = 15
+    l.TextXAlignment = Enum.TextXAlignment.Left
+    l.TextColor3 = theme().Text
+    l.Text = textValue
+    l.Parent = SettingsScroll
+    return l
+end
+
+local function settingButton(textValue)
+    local b = Instance.new("TextButton")
+    b.AutoButtonColor = false
+    b.Size = UDim2.new(1, 0, 0, 42)
+    b.BackgroundColor3 = theme().Button
+    b.BorderSizePixel = 0
+    b.Font = Enum.Font.GothamMedium
+    b.TextSize = 13
+    b.TextColor3 = theme().Text
+    b.TextXAlignment = Enum.TextXAlignment.Left
+    b.Text = textValue
+    b.Parent = SettingsScroll
+
+    local pad = Instance.new("UIPadding")
+    pad.PaddingLeft = UDim.new(0, 14)
+    pad.Parent = b
+
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 9)
+    c.Parent = b
+
+    local s = Instance.new("UIStroke")
+    s.Color = theme().Stroke
+    s.Thickness = 1
+    s.Parent = b
+
+    b.MouseEnter:Connect(function()
+        tween(b, TweenInfo.new(0.1), {BackgroundColor3 = theme().Hover})
+    end)
+    b.MouseLeave:Connect(function()
+        tween(b, TweenInfo.new(0.1), {BackgroundColor3 = theme().Button})
+    end)
+
+    return b
+end
+
+settingHeader("Appearance")
+
+local ThemeButton = settingButton("Theme: Dark")
+local ScaleDown = settingButton("UI Scale: 100%   [-]")
+local ScaleUp = settingButton("UI Scale: 100%   [+]")
+local LiteButton = settingButton("Lite Mode: OFF")
+
+settingHeader("Bring Method")
+local BringMethodButton = settingButton("Bring Method: Local Move/Pivot")
+
+settingHeader("Items")
+
+local FavoritesOnlyButton = settingButton("Favorites Only: OFF")
+local SortSettingButton = settingButton("Sorting: Original Order")
+
+settingHeader("Controls")
+
+local ControlsButton = settingButton("Controls & Keybinds")
+
+local KeybindHeader = settingHeader("Ch2 Keybind Editor")
+for _, item in ipairs(CH2_ITEMS) do
+    local bindButton = settingButton(item.Name .. "  •  Key: " .. tostring(State.ItemKeys[item.Name] or "None"))
+    bindButton.Size = UDim2.new(1, 0, 0, 38)
+    bindButton.MouseButton1Click:Connect(function()
+        local current = State.ItemKeys[item.Name] or "None"
+        local currentIndex = 1
+        for i, keyName in ipairs(EDIT_KEYS) do
+            if keyName == current then
+                currentIndex = i
+                break
+            end
+        end
+
+        local assigned = false
+        for step = 1, #EDIT_KEYS do
+            local nextIndex = ((currentIndex - 1 + step) % #EDIT_KEYS) + 1
+            local candidate = EDIT_KEYS[nextIndex]
+            if candidate == "None" or not State.Keybinds[candidate] or State.Keybinds[candidate] == item.Name then
+                if current ~= "None" then
+                    State.Keybinds[current] = nil
+                end
+                State.ItemKeys[item.Name] = candidate
+                if candidate ~= "None" then
+                    State.Keybinds[candidate] = item.Name
+                end
+                assigned = true
+                break
+            end
+        end
+
+        if assigned then
+            updateKeybindButtons()
+            saveSession()
+            notify(item.Name .. " keybind → " .. tostring(State.ItemKeys[item.Name]), "success")
+        else
+            notify("No free key is available for " .. item.Name, "error")
+        end
+    end)
+    KeybindButtons[item.Name] = bindButton
+end
+
+local RefreshSettings = settingButton("Refresh Item Status")
+local ResetButton = settingButton("Reset UI Position / Scale")
+
+settingHeader("Session")
+
+local ModeSettingButton = settingButton("Mode: Ch2")
+local LayoutModeButton = settingButton("Layout Mode: Auto")
+local LegacySettingButton = settingButton("Open Legacy Archive")
+
+--==================================================
+-- ABOUT PAGE
+--==================================================
+
+local AboutFrame = Instance.new("ScrollingFrame")
+AboutFrame.BackgroundColor3 = theme().Panel
+AboutFrame.BorderSizePixel = 0
+AboutFrame.Size = UDim2.fromScale(1, 1)
+AboutFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+AboutFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+AboutFrame.ScrollBarThickness = 5
+AboutFrame.ScrollBarImageColor3 = theme().Accent
+AboutFrame.Parent = AboutPage
+
+local AboutCorner = Instance.new("UICorner")
+AboutCorner.CornerRadius = UDim.new(0, 12)
+AboutCorner.Parent = AboutFrame
+
+local AboutPad = Instance.new("UIPadding")
+AboutPad.PaddingTop = UDim.new(0, 18)
+AboutPad.PaddingBottom = UDim.new(0, 18)
+AboutPad.PaddingLeft = UDim.new(0, 18)
+AboutPad.PaddingRight = UDim.new(0, 18)
+AboutPad.Parent = AboutFrame
+
+local AboutList = Instance.new("UIListLayout")
+AboutList.Padding = UDim.new(0, 10)
+AboutList.Parent = AboutFrame
+
+local function aboutText(textValue, size, bold)
+    local l = Instance.new("TextLabel")
+    l.BackgroundTransparency = 1
+    l.Size = UDim2.new(1, 0, 0, size)
+    l.AutomaticSize = Enum.AutomaticSize.Y
+    l.TextWrapped = true
+    l.Font = bold and Enum.Font.GothamBold or Enum.Font.Gotham
+    l.TextSize = bold and 18 or 13
+    l.TextXAlignment = Enum.TextXAlignment.Left
+    l.TextYAlignment = Enum.TextYAlignment.Top
+    l.TextColor3 = bold and theme().Text or theme().SubText
+    l.Text = textValue
+    l.Parent = AboutFrame
+    return l
+end
+
+aboutText("🧰 Ch2 Hub", 28, true)
+aboutText("Ultimate Edition", 20, false)
+aboutText("Ultimate DNA", 28, true)
+aboutText("Ultimate is built on two V3-era cores rather than a single straight-line foundation. The OG V3 core is the version that defined what CH2 Hub became: its structure, identity and core workflow shaped everything that followed. The V3 Legacy / Remastered core represents the later return to that classic direction, preserving and refining the V3 identity instead of simply moving on from it. Ultimate carries both of those cores forward, then combines the ideas and lessons developed through V4, V5 and V5.1. That is why Ultimate is not simply another numbered release — it is a deliberate final edition built around the evolution, history and identity of CH2 Hub.", 112, false)
+aboutText("What this project is", 28, true)
+aboutText("Ch2 Hub Ultimate is the current combined single-LocalScript hub. It combines the Ch2 Hub and GRANNY RETRO HUB item systems, preserves the documented historical lineage, and adds modern search, filtering, favorites, themes, scaling, notifications, a dual bring system, and a source-aware Legacy Archive. Press R at any time when a text box is not focused to switch between the live Ch2 Hub and GRANNY RETRO HUB modes.", 96, false)
+aboutText("Ch2 Hub", 28, true)
+aboutText("11 documented entries: Spark Plug, Gasoline can, Boat Steering Wheel, PadLock Key, Boat Key, Security key, Crowbar, Cutting pliers, Safe Key, Hand Wheel and Door Handle. Individual keybinds remain 1 / 2 / 3 / 4 / 5 / 7 / 8 / 9 / 0 / Y / U. G performs Bring All and L toggles the hub.", 98, false)
+aboutText("GRANNY RETRO HUB", 28, true)
+aboutText("The GRANNY RETRO HUB mode contains all 32 roster entries, including duplicate entries such as multiple Ammo, A part of a shotgun, Cogwheel and Tranquilizer dart entries. Duplicate-aware local Bring All attempts to use distinct physical instances rather than repeatedly reusing the same object. GRANNY RETRO HUB intentionally has no individual item keybinds.", 110, false)
+aboutText("Dual bring system", 28, true)
+aboutText("Settings now let you choose between Local Move/Pivot and Remote Get/Drop. Local mode uses the existing client-side model/part movement system. Remote mode follows the supplied ReplicatedStorage.Events.Get / Drop workflow and scans Map → Objects for Item instances. The remote method depends on that specific game's RemoteEvents and can fail if the game does not expose or accept them.", 112, false)
+aboutText("Themes & customization", 28, true)
+aboutText("The Themes button remains the theme selector and cycles through Dark, Light, Neon, Forest, Sunset, Ocean, Crimson and Midnight. The hub also includes Lite Mode, UI scaling, layout choices, favorites, Favorites Only, A-Z sorting, notifications, draggable positioning, minimize, refresh and a Ch2 keybind editor.", 88, false)
+aboutText("Legacy Archive", 28, true)
+aboutText("The Archive covers V1 → V2 → OG V3 → V3 Legacy / Remastered → V4 → V5 → V5.1 → V6 → Ultimate. Each entry explains the role of that version, documented features, changes and limitations. V2 is documented as lost media with a clearly labelled recreation rather than a fake recovered source, while V6 is recorded as the planned but scrapped numbered successor. The embedded originals are the primary source path; an installed LocalScript is only the fallback when this runtime does not provide loadstring.", 106, false)
+aboutText("Historical version rules", 28, true)
+aboutText("Historical teleport-to-item is isolated to the V4 recreation. Ultimate does not add teleport-to-item as an Ultimate feature. Recreated versions are clearly labelled as recreations; the hub does not claim missing source was recovered.", 74, false)
+aboutText("Credits", 28, true)
+aboutText("Created / maintained by heyitsme ghost.\n\nLegacy source files supplied later can be added to the Archive's installed-original system without changing the Ultimate core.", 62, false)
+
+--==================================================
+-- LEGACY PAGE
+--==================================================
+
+local LegacyScroll = Instance.new("ScrollingFrame")
+LegacyScroll.BackgroundColor3 = theme().Panel
+LegacyScroll.BorderSizePixel = 0
+LegacyScroll.Size = UDim2.fromScale(1, 1)
+LegacyScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+LegacyScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+LegacyScroll.ScrollBarThickness = 5
+LegacyScroll.ScrollBarImageColor3 = theme().Accent
+LegacyScroll.Parent = LegacyPage
+
+local LegacyCorner = Instance.new("UICorner")
+LegacyCorner.CornerRadius = UDim.new(0, 12)
+LegacyCorner.Parent = LegacyScroll
+
+local LegacyPad = Instance.new("UIPadding")
+LegacyPad.PaddingTop = UDim.new(0, 12)
+LegacyPad.PaddingBottom = UDim.new(0, 12)
+LegacyPad.PaddingLeft = UDim.new(0, 12)
+LegacyPad.PaddingRight = UDim.new(0, 12)
+LegacyPad.Parent = LegacyScroll
+
+local LegacyList = Instance.new("UIListLayout")
+LegacyList.Padding = UDim.new(0, 8)
+LegacyList.SortOrder = Enum.SortOrder.LayoutOrder
+LegacyList.Parent = LegacyScroll
+
+local LegacyTitle = Instance.new("TextLabel")
+LegacyTitle.BackgroundTransparency = 1
+LegacyTitle.Size = UDim2.new(1, 0, 0, 34)
+LegacyTitle.Font = Enum.Font.GothamBold
+LegacyTitle.TextSize = 19
+LegacyTitle.TextXAlignment = Enum.TextXAlignment.Left
+LegacyTitle.TextColor3 = theme().Text
+LegacyTitle.Text = "Legacy Archive"
+LegacyTitle.Parent = LegacyScroll
+
+local LegacyInfo = Instance.new("TextLabel")
+LegacyInfo.BackgroundTransparency = 1
+LegacyInfo.Size = UDim2.new(1, 0, 0, 78)
+LegacyInfo.AutomaticSize = Enum.AutomaticSize.Y
+LegacyInfo.TextWrapped = true
+LegacyInfo.Font = Enum.Font.Gotham
+LegacyInfo.TextSize = 12
+LegacyInfo.TextXAlignment = Enum.TextXAlignment.Left
+LegacyInfo.TextYAlignment = Enum.TextYAlignment.Top
+LegacyInfo.TextColor3 = theme().SubText
+LegacyInfo.Text = "Browse the complete Ch2 Hub lineage. Every version has detailed history, features, changes and limitations.\n\nUse Original launches the embedded original source when the runtime provides loadstring, with an installed LocalScript fallback. Use Recreation enters a documented recreation inside this Ultimate script. A recreation is never presented as recovered source."
+LegacyInfo.Parent = LegacyScroll
+
+local LegacyDetails = Instance.new("TextLabel")
+LegacyDetails.BackgroundColor3 = theme().Panel2
+LegacyDetails.BorderSizePixel = 0
+LegacyDetails.Size = UDim2.new(1, 0, 0, 170)
+LegacyDetails.AutomaticSize = Enum.AutomaticSize.Y
+LegacyDetails.TextWrapped = true
+LegacyDetails.Font = Enum.Font.Gotham
+LegacyDetails.TextSize = 12
+LegacyDetails.TextXAlignment = Enum.TextXAlignment.Left
+LegacyDetails.TextYAlignment = Enum.TextYAlignment.Top
+LegacyDetails.TextColor3 = theme().Text
+LegacyDetails.Text = "Selected: Ultimate"
+LegacyDetails.Parent = LegacyScroll
+
+local LegacyDetailsCorner = Instance.new("UICorner")
+LegacyDetailsCorner.CornerRadius = UDim.new(0, 9)
+LegacyDetailsCorner.Parent = LegacyDetails
+
+local LegacyDetailsPad = Instance.new("UIPadding")
+LegacyDetailsPad.PaddingTop = UDim.new(0, 10)
+LegacyDetailsPad.PaddingBottom = UDim.new(0, 10)
+LegacyDetailsPad.PaddingLeft = UDim.new(0, 12)
+LegacyDetailsPad.PaddingRight = UDim.new(0, 12)
+LegacyDetailsPad.Parent = LegacyDetails
+
+local LegacyActionBar = Instance.new("Frame")
+LegacyActionBar.BackgroundTransparency = 1
+LegacyActionBar.Size = UDim2.new(1, 0, 0, 132)
+LegacyActionBar.AutomaticSize = Enum.AutomaticSize.Y
+LegacyActionBar.Parent = LegacyScroll
+
+local LegacyActionLayout = Instance.new("UIListLayout")
+LegacyActionLayout.FillDirection = Enum.FillDirection.Vertical
+LegacyActionLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+LegacyActionLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+LegacyActionLayout.Padding = UDim.new(0, 7)
+LegacyActionLayout.Parent = LegacyActionBar
+
+local function archiveActionButton(textValue)
+    local b = Instance.new("TextButton")
+    b.AutoButtonColor = false
+    b.Size = UDim2.new(1, 0, 0, 38)
+    b.BackgroundColor3 = theme().Button
+    b.BorderSizePixel = 0
+    b.Font = Enum.Font.GothamBold
+    b.TextSize = 11
+    b.TextColor3 = theme().Text
+    b.Text = textValue
+    b.Parent = LegacyActionBar
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 8)
+    c.Parent = b
+    local st = Instance.new("UIStroke")
+    st.Color = theme().Stroke
+    st.Thickness = 1
+    st.Parent = b
+    return b
+end
+
+local LegacyOriginalButton = archiveActionButton("Use Original")
+local LegacyRecreationButton = archiveActionButton("Use Recreation")
+local LegacyUltimateButton = archiveActionButton("Return to Ultimate")
+
+local LegacySourceNote = Instance.new("TextLabel")
+LegacySourceNote.BackgroundTransparency = 1
+LegacySourceNote.Size = UDim2.new(1, 0, 0, 48)
+LegacySourceNote.AutomaticSize = Enum.AutomaticSize.Y
+LegacySourceNote.TextWrapped = true
+LegacySourceNote.Font = Enum.Font.Gotham
+LegacySourceNote.TextSize = 11
+LegacySourceNote.TextColor3 = theme().SubText
+LegacySourceNote.TextXAlignment = Enum.TextXAlignment.Left
+LegacySourceNote.TextYAlignment = Enum.TextYAlignment.Top
+LegacySourceNote.Text = "Original source support: V1, OG V3, V3 Remastered, V4, V5 and V5.1 are embedded in this archive launcher. V2 remains a documented recreation because its original source is unavailable. If this environment does not provide loadstring, the supplied original LocalScripts can still be installed under CoreGui > Ch2HubLegacySources.\n\nThe supplied original sources are embedded as exact text and launched directly when the runtime provides loadstring. A separate LocalScript fallback remains available for environments without a compiler, so real old scripts remain separate installed LocalScripts; the Archive controls launch/return while the Ultimate script stays the main archive/controller."
+LegacySourceNote.Parent = LegacyScroll
+
+local LegacyButtons = {}
+
+updateLegacyDetails = function()
+    local info = LEGACY[State.ChosenLegacy] or LEGACY.Ultimate
+    local featureText = table.concat(info.Features or {}, " • ")
+    LegacyDetails.Text = table.concat({
+        "Selected: " .. info.Version .. " — " .. info.Title,
+        "Status: " .. info.Status,
+        "Source: " .. info.SourceStatus,
+        "",
+        "Features: " .. featureText,
+        "",
+        "What changed: " .. info.Changes,
+        "",
+        "Limitations: " .. info.Limitations,
+    }, "\n")
+
+    local installed = ORIGINAL_SOURCES[info.Version] ~= nil or findInstalledLegacyScript(info) ~= nil
+    LegacyOriginalButton.Visible = info.Version ~= "Ultimate" and installed
+    LegacyOriginalButton.Text = installed and "Use Original • Ready" or "Use Original • Not Installed"
+    LegacyOriginalButton.BackgroundColor3 = installed and theme().Accent or theme().Button
+    LegacyRecreationButton.Visible = info.Version ~= "Ultimate" and info.Recreation == true
+    LegacyUltimateButton.Visible = info.Version == "Ultimate" or isLegacyActive()
+end
+
+for index, version in ipairs(LEGACY_ORDER) do
+    local info = LEGACY[version]
+    local b = Instance.new("TextButton")
+    b.AutoButtonColor = false
+    b.Size = UDim2.new(1, 0, 0, 56)
+    b.BackgroundColor3 = theme().Button
+    b.BorderSizePixel = 0
+    b.Font = Enum.Font.GothamMedium
+    b.TextSize = 12
+    b.TextColor3 = theme().Text
+    b.TextXAlignment = Enum.TextXAlignment.Left
+    b.Text = info.Version .. "  •  " .. info.Title
+    b.LayoutOrder = 10 + index
+    b.Parent = LegacyScroll
+
+    local pad = Instance.new("UIPadding")
+    pad.PaddingLeft = UDim.new(0, 13)
+    pad.Parent = b
+
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 9)
+    c.Parent = b
+
+    local st = Instance.new("UIStroke")
+    st.Color = theme().Stroke
+    st.Thickness = 1
+    st.Parent = b
+
+    b.MouseEnter:Connect(function()
+        tween(b, TweenInfo.new(0.1), {BackgroundColor3 = theme().Hover})
+    end)
+    b.MouseLeave:Connect(function()
+        tween(b, TweenInfo.new(0.1), {BackgroundColor3 = State.ChosenLegacy == version and theme().Accent or theme().Button})
+    end)
+
+    b.MouseButton1Click:Connect(function()
+        State.ChosenLegacy = version
+        updateLegacyDetails()
+    end)
+
+    table.insert(LegacyButtons, b)
+end
+
+LegacyOriginalButton.MouseButton1Click:Connect(function()
+    local info = LEGACY[State.ChosenLegacy]
+    if info and info.Version ~= "Ultimate" then
+        if launchInstalledLegacy(info) then
+            updateLegacyDetails()
+        end
+    end
+end)
+
+LegacyRecreationButton.MouseButton1Click:Connect(function()
+    local info = LEGACY[State.ChosenLegacy]
+    if info then
+        enterLegacyRecreation(info)
+    end
+end)
+
+LegacyUltimateButton.MouseButton1Click:Connect(function()
+    restoreUltimate()
+end)
+
+-- Delayed until the legacy-source helpers are initialized.
+
+--==================================================
+-- NOTIFICATION MANAGER
+--==================================================
+
+local Notifications = Instance.new("Frame")
+Notifications.Name = "Notifications"
+Notifications.AnchorPoint = Vector2.new(1, 1)
+Notifications.Position = UDim2.new(1, -12, 1, -12)
+Notifications.Size = UDim2.fromOffset(320, 230)
+Notifications.BackgroundTransparency = 1
+Notifications.ZIndex = 100
+Notifications.Parent = ScreenGui
+
+local NotificationList = Instance.new("UIListLayout")
+NotificationList.FillDirection = Enum.FillDirection.Vertical
+NotificationList.VerticalAlignment = Enum.VerticalAlignment.Bottom
+NotificationList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+NotificationList.Padding = UDim.new(0, 6)
+NotificationList.Parent = Notifications
+
+function notify(message, kind)
+    local t = theme()
+
+    local n = Instance.new("TextLabel")
+    n.BackgroundColor3 = t.Panel
+    n.BackgroundTransparency = 0
+    n.BorderSizePixel = 0
+    n.Size = UDim2.fromOffset(300, 36)
+    n.AutomaticSize = Enum.AutomaticSize.Y
+    n.TextWrapped = true
+    n.Font = Enum.Font.GothamMedium
+    n.TextSize = 12
+    n.TextColor3 = t.Text
+    n.TextXAlignment = Enum.TextXAlignment.Left
+    n.Text = tostring(message)
+    n.ZIndex = 101
+    n.Parent = Notifications
+
+    local c = Instance.new("UICorner")
+    c.CornerRadius = UDim.new(0, 9)
+    c.Parent = n
+
+    local s = Instance.new("UIStroke")
+    s.Thickness = 1
+    s.Color = kind == "success" and t.Success or kind == "error" and t.Danger or t.Accent
+    s.Parent = n
+
+    local p = Instance.new("UIPadding")
+    p.PaddingTop = UDim.new(0, 8)
+    p.PaddingBottom = UDim.new(0, 8)
+    p.PaddingLeft = UDim.new(0, 11)
+    p.PaddingRight = UDim.new(0, 11)
+    p.Parent = n
+
+    task.delay(2.6, function()
+        if n.Parent then
+            tween(n, TweenInfo.new(0.18), {TextTransparency = 1, BackgroundTransparency = 1})
+            task.wait(0.2)
+            if n.Parent then
+                n:Destroy()
+            end
+        end
+    end)
+end
+
+--==================================================
+-- LEGACY SOURCE / DUAL BRING HELPERS
+--==================================================
+
+local ActiveLegacyScript = nil
+
+local LEGACY_GUI_NAMES = {
+    V1 = "SummonPartsGui",
+    V2 = nil,
+    ["OG V3"] = "Ch2HubV3",
+    ["V3 Remastered"] = "Ch2HubV3Remastered",
+    V4 = "Ch2HubV4",
+    V5 = "Ch2HubV5",
+    ["V5.1"] = "Ch2HubV5.1",
+}
+
+local function cleanupLegacyGui(version)
+    local guiName = LEGACY_GUI_NAMES[version]
+    if not guiName then return end
+    local oldGui = CoreGui:FindFirstChild(guiName)
+    if oldGui then
+        pcall(function() oldGui:Destroy() end)
+    end
+end
+
+local LegacySourceFolder = CoreGui:FindFirstChild("Ch2HubLegacySources")
+if not LegacySourceFolder then
+    LegacySourceFolder = Instance.new("Folder")
+    LegacySourceFolder.Name = "Ch2HubLegacySources"
+    LegacySourceFolder.Parent = CoreGui
+end
+
+local function currentLegacyInfo()
+    return LEGACY[State.Version] or LEGACY.Ultimate
+end
+
+local function isLegacyActive()
+    return State.LegacyPreview and State.Version ~= "Ultimate"
+end
+
+local function getLegacyDataset()
+    local info = currentLegacyInfo()
+    return info.Items or CH2_ITEMS
+end
+
+local function getCompiler()
+    if type(loadstring) == "function" then return loadstring end
+    local ok, env = pcall(function() return getgenv() end)
+    if ok and type(env) == "table" and type(env.loadstring) == "function" then return env.loadstring end
+    return nil
+end
+
+local function cleanupAllLegacyGuis()
+    for _, guiName in pairs(LEGACY_GUI_NAMES) do
+        if guiName then
+            local gui = CoreGui:FindFirstChild(guiName)
+            if gui then pcall(function() gui:Destroy() end) end
+        end
+    end
+end
+
+findInstalledLegacyScript = function(info)
+    if not info or not info.RealScriptName then return nil end
+    if LegacySourceFolder then
+        local direct = LegacySourceFolder:FindFirstChild(info.RealScriptName, true)
+        if direct and direct:IsA("LocalScript") then return direct end
+    end
+    for _, descendant in ipairs(CoreGui:GetDescendants()) do
+        if descendant:IsA("LocalScript") and descendant.Name == info.RealScriptName then return descendant end
+    end
+    return nil
+end
+
+restoreUltimate = function()
+    if ActiveLegacyScript and ActiveLegacyScript.Parent then pcall(function() ActiveLegacyScript.Disabled = true end) end
+    ActiveLegacyScript = nil
+    cleanupAllLegacyGuis()
+    State.LegacyPreview = false
+    State.Version = "Ultimate"
+    State.Mode = "Ch2"
+    State.Search = ""
+    State.Category = "All"
+    State.FavoritesOnly = false
+    SearchBox.Text = ""
+    Title.Text = "🧰 Ch2 Hub Ultimate"
+    ModeButton.Text = "CH2"
+    Main.Visible = true
+    State.Visible = true
+    showPage("Items")
+    rebuildCategories()
+    buildItemList()
+    notify("Returned to Ultimate", "success")
+end
+
+launchInstalledLegacy = function(info)
+    cleanupAllLegacyGuis()
+    if ActiveLegacyScript and ActiveLegacyScript.Parent then pcall(function() ActiveLegacyScript.Disabled = true end) end
+    ActiveLegacyScript = nil
+
+    local source = ORIGINAL_SOURCES[info.Version]
+    if source then
+        local compiler = getCompiler()
+        if compiler then
+            local okCompile, chunkOrErr = pcall(compiler, source, "=" .. tostring(info.RealScriptName or info.Version))
+            if okCompile and type(chunkOrErr) == "function" then
+                State.LegacyPreview = true
+                State.Version = info.Version
+                State.Mode = "Ch2"
+                Main.Visible = false
+                State.Visible = false
+                local okRun, runErr = pcall(chunkOrErr)
+                if okRun then
+                    notify(info.Version .. " original launched", "success")
+                    return true
+                end
+                cleanupAllLegacyGuis()
+                State.LegacyPreview = false
+                State.Version = "Ultimate"
+                State.Mode = "Ch2"
+                Main.Visible = true
+                State.Visible = true
+                notify(info.Version .. " original failed: " .. tostring(runErr), "error")
+                return false
+            end
+            notify(info.Version .. " original could not compile: " .. tostring(chunkOrErr), "error")
+            return false
+        end
+    end
+
+    local script = findInstalledLegacyScript(info)
+    if not script then
+        notify(info.Version .. " original loader unavailable here; install the supplied LocalScript instead", "error")
+        return false
+    end
+    ActiveLegacyScript = script
+    State.LegacyPreview = true
+    State.Version = info.Version
+    State.Mode = "Ch2"
+    Main.Visible = false
+    State.Visible = false
+    pcall(function() script.Disabled = false end)
+    notify(info.Version .. " original launched", "success")
+    return true
+end
+
+enterLegacyRecreation = function(info)
+    if ActiveLegacyScript and ActiveLegacyScript.Parent then
+        pcall(function() ActiveLegacyScript.Disabled = true end)
+    end
+    ActiveLegacyScript = nil
+    State.LegacyPreview = info.Version ~= "Ultimate"
+    State.Version = info.Version
+    State.Mode = "Ch2"
+    State.Search = ""
+    State.Category = "All"
+    State.FavoritesOnly = false
+    SearchBox.Text = ""
+    State.Minimized = false
+    Main.Visible = true
+    State.Visible = true
+    Title.Text = "🗃 " .. info.Version .. " • " .. info.Title
+    ModeButton.Text = "LEGACY"
+    showPage("Items")
+    rebuildCategories()
+    buildItemList()
+    notify(info.Version .. " recreation active", "success")
+end
+
+local function remoteTargets(itemName)
+    local targets = {}
+    local map = workspace:FindFirstChild("Map")
+    if not map then return targets end
+
+    for _, folder in ipairs(map:GetDescendants()) do
+        if folder.Name == "Objects" then
+            for _, object in ipairs(folder:GetChildren()) do
+                local item = object:FindFirstChild("Item")
+                if item then
+                    if not itemName or normalize(object.Name) == normalize(itemName) or normalize(item.Name) == normalize(itemName) then
+                        table.insert(targets, item)
+                    end
+                end
+            end
+        end
+    end
+    return targets
+end
+
+local function getRemoteEvents()
+    local events = ReplicatedStorage:FindFirstChild("Events")
+    if not events then
+        return nil, nil, "ReplicatedStorage.Events not found"
+    end
+    local getEvent = events:FindFirstChild("Get")
+    local dropEvent = events:FindFirstChild("Drop")
+    if not getEvent or not getEvent:IsA("RemoteEvent") then
+        return nil, nil, "Events.Get RemoteEvent not found"
+    end
+    if not dropEvent or not dropEvent:IsA("RemoteEvent") then
+        return nil, nil, "Events.Drop RemoteEvent not found"
+    end
+    return getEvent, dropEvent, nil
+end
+
+local function remoteBringItem(itemName)
+    local getEvent, dropEvent, err = getRemoteEvents()
+    if not getEvent then
+        notify("Remote method unavailable • " .. err, "error")
+        return false
+    end
+
+    local targets = remoteTargets(itemName)
+    local target = targets[1]
+    if not target then
+        notify("Remote target not found: " .. itemName, "error")
+        return false
+    end
+
+    local ok, reason = pcall(function()
+        getEvent:FireServer(LocalPlayer, target)
+        task.wait()
+        dropEvent:FireServer(LocalPlayer)
+    end)
+
+    if not ok then
+        notify("Remote failed: " .. itemName .. " • " .. tostring(reason), "error")
+        return false
+    end
+
+    notify("Remote Get/Drop: " .. itemName, "success")
+    return true
+end
+
+local function remoteBringAll()
+    local getEvent, dropEvent, err = getRemoteEvents()
+    if not getEvent then
+        notify("Remote method unavailable • " .. err, "error")
+        return false
+    end
+
+    local targets = remoteTargets(nil)
+    if #targets == 0 then
+        notify("Remote scan found no Map.Objects items", "error")
+        return false
+    end
+
+    local successful = 0
+    local failed = 0
+    for _, target in ipairs(targets) do
+        local ok = pcall(function()
+            getEvent:FireServer(LocalPlayer, target)
+            task.wait()
+            dropEvent:FireServer(LocalPlayer)
+        end)
+        if ok then
+            successful += 1
+        else
+            failed += 1
+        end
+    end
+
+    notify(string.format("Remote Bring All • %d processed • %d failed", successful, failed), successful > 0 and "success" or "error")
+    refreshStatus()
+    return successful > 0
+end
+
+local function bringMethodLabel()
+    if State.BringMethod == "Remote" then
+        return "Remote Get/Drop (server events)"
+    end
+    return "Local Move/Pivot"
+end
+-- Legacy detail pass after all source/bring helpers are initialized.
+updateLegacyDetails()
+
+
+--==================================================
+-- ITEM FILTER / CARD HELPERS
+--==================================================
+
+local function getDataset()
+    if isLegacyActive() then
+        return getLegacyDataset()
+    end
+    return DATASETS[State.Mode]
+end
+
+local function getCategories()
+    local set = {All = true}
+    for _, item in ipairs(getDataset()) do
+        set[item.Category] = true
+    end
+
+    local categories = {"All"}
+    for name in pairs(set) do
+        if name ~= "All" then
+            table.insert(categories, name)
+        end
+    end
+    table.sort(categories, function(a, b)
+        return a < b
+    end)
+    return categories
+end
+
+local function isFavorite(index)
+    local scope = isLegacyActive() and ("Legacy:" .. State.Version) or State.Mode
+    return State.Favorites[scope .. ":" .. tostring(index)] == true
+end
+
+local function filteredItems()
+    local result = {}
+    local search = normalize(State.Search)
+
+    for index, item in ipairs(getDataset()) do
+        local categoryOK = State.Category == "All" or item.Category == State.Category
+        local favoriteOK = not State.FavoritesOnly or isFavorite(index)
+        local searchOK = search == "" or normalize(item.Name):find(search, 1, true) ~= nil
+
+        if categoryOK and favoriteOK and searchOK then
+            table.insert(result, {
+                Index = index,
+                Data = item,
+            })
+        end
+    end
+
+    if State.SortAZ then
+        table.sort(result, function(a, b)
+            local an = normalize(a.Data.Name)
+            local bn = normalize(b.Data.Name)
+            if an == bn then
+                return a.Index < b.Index
+            end
+            return an < bn
+        end)
+    end
+
+    return result
+end
+
+local function updateStats(totalShown)
+    local total = #getDataset()
+    local favs = 0
+    for i = 1, total do
+        if isFavorite(i) then
+            favs += 1
+        end
+    end
+
+    StatsLabel.Text = string.format("Showing %d / %d  •  ♥ %d", totalShown, total, favs)
+end
+
+local function clearCards()
+    disconnectAll(CardConnections)
+    for _, child in ipairs(ItemScroll:GetChildren()) do
+        if child:IsA("Frame") then
+            child:Destroy()
+        end
+    end
+end
+
+local function createItemCard(entry, layoutOrder)
+    local item = entry.Data
+    local index = entry.Index
+    local t = theme()
+    local legacyInfo = currentLegacyInfo()
+    local historicalTeleport = isLegacyActive() and legacyInfo.HistoricalTeleport
+
+    local Card = Instance.new("Frame")
+    Card.Name = "Item_" .. tostring(index)
+    Card.Size = UDim2.new(1, -16, 0, State.LiteMode and 76 or 84)
+    Card.BackgroundColor3 = t.Button
+    Card.BorderSizePixel = 0
+    Card.LayoutOrder = layoutOrder
+    Card.Parent = ItemScroll
+
+    local cc = Instance.new("UICorner")
+    cc.CornerRadius = UDim.new(0, 10)
+    cc.Parent = Card
+
+    local cs = Instance.new("UIStroke")
+    cs.Color = t.Stroke
+    cs.Thickness = 1
+    cs.Parent = Card
+
+    local NameLabel = Instance.new("TextLabel")
+    NameLabel.BackgroundTransparency = 1
+    NameLabel.Position = UDim2.fromOffset(12, 8)
+    NameLabel.Size = UDim2.new(1, -156, 0, 22)
+    NameLabel.Font = Enum.Font.GothamBold
+    NameLabel.TextSize = 14
+    NameLabel.TextXAlignment = Enum.TextXAlignment.Left
+    NameLabel.TextColor3 = t.Text
+    NameLabel.Text = item.Name
+    NameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    NameLabel.Parent = Card
+
+    local Meta = Instance.new("TextLabel")
+    Meta.BackgroundTransparency = 1
+    Meta.Position = UDim2.fromOffset(12, 34)
+    Meta.Size = UDim2.new(1, -156, 0, 32)
+    Meta.Font = Enum.Font.Gotham
+    Meta.TextSize = 11
+    Meta.TextXAlignment = Enum.TextXAlignment.Left
+    Meta.TextYAlignment = Enum.TextYAlignment.Top
+    Meta.TextColor3 = t.SubText
+    Meta.TextWrapped = true
+
+    local exists = itemExists(item.Name)
+    if State.Mode == "Ch2" then
+        Meta.Text = item.Category .. "  •  Key " .. tostring(item.Key or "—") .. "  •  " .. (exists and "Found" or "Not found")
+    else
+        Meta.Text = item.Category .. "  •  " .. (exists and "Found" or "Not found")
+    end
+    if isLegacyActive() then
+        Meta.Text = Meta.Text .. "  •  " .. (historicalTeleport and "Historical Teleport" or "Legacy")
+    end
+    Meta.Parent = Card
+
+    local ActionRail = Instance.new("Frame")
+    ActionRail.BackgroundTransparency = 1
+    ActionRail.AnchorPoint = Vector2.new(1, 0.5)
+    ActionRail.Position = UDim2.new(1, -10, 0.5, 0)
+    ActionRail.Size = UDim2.fromOffset(130, 42)
+    ActionRail.Parent = Card
+
+    local ActionList = Instance.new("UIListLayout")
+    ActionList.FillDirection = Enum.FillDirection.Horizontal
+    ActionList.HorizontalAlignment = Enum.HorizontalAlignment.Right
+    ActionList.VerticalAlignment = Enum.VerticalAlignment.Center
+    ActionList.Padding = UDim.new(0, 5)
+    ActionList.Parent = ActionRail
+
+    local Favorite = Instance.new("TextButton")
+    Favorite.AutoButtonColor = false
+    Favorite.BackgroundColor3 = t.Panel2
+    Favorite.BorderSizePixel = 0
+    Favorite.Size = UDim2.fromOffset(38, 38)
+    Favorite.Font = Enum.Font.GothamBold
+    Favorite.TextSize = 18
+    Favorite.TextColor3 = t.Text
+    Favorite.Text = isFavorite(index) and "★" or "☆"
+    Favorite.Parent = ActionRail
+
+    local fc = Instance.new("UICorner")
+    fc.CornerRadius = UDim.new(0, 9)
+    fc.Parent = Favorite
+
+    local fs = Instance.new("UIStroke")
+    fs.Color = t.Stroke
+    fs.Thickness = 1
+    fs.Parent = Favorite
+
+    local Bring = Instance.new("TextButton")
+    Bring.AutoButtonColor = false
+    Bring.BackgroundColor3 = t.Accent
+    Bring.BorderSizePixel = 0
+    Bring.Size = UDim2.fromOffset(84, 38)
+    Bring.Font = Enum.Font.GothamBold
+    Bring.TextSize = 11
+    Bring.TextColor3 = Color3.new(1, 1, 1)
+    Bring.Text = historicalTeleport and "Teleport" or "Bring"
+    Bring.Parent = ActionRail
+
+    local bc = Instance.new("UICorner")
+    bc.CornerRadius = UDim.new(0, 9)
+    bc.Parent = Bring
+
+    Favorite.MouseEnter:Connect(function()
+        tween(Favorite, TweenInfo.new(0.1), {BackgroundColor3 = t.Hover})
+    end)
+    Favorite.MouseLeave:Connect(function()
+        tween(Favorite, TweenInfo.new(0.1), {BackgroundColor3 = t.Panel2})
+    end)
+
+    Bring.MouseEnter:Connect(function()
+        tween(Bring, TweenInfo.new(0.1), {BackgroundColor3 = t.Hover})
+    end)
+    Bring.MouseLeave:Connect(function()
+        tween(Bring, TweenInfo.new(0.1), {BackgroundColor3 = t.Accent})
+    end)
+
+    local c1 = Favorite.MouseButton1Click:Connect(function()
+        local scope = isLegacyActive() and ("Legacy:" .. State.Version) or State.Mode
+        local key = scope .. ":" .. tostring(index)
+        State.Favorites[key] = not State.Favorites[key]
+        saveSession()
+        Favorite.Text = State.Favorites[key] and "★" or "☆"
+        notify((State.Favorites[key] and "Added to" or "Removed from") .. " favorites: " .. item.Name, "success")
+    end)
+
+    local c2 = Bring.MouseButton1Click:Connect(function()
+        if State.BringMethod == "Remote" and not historicalTeleport then
+            remoteBringItem(item.Name)
+        elseif State.BringMethod == "Remote" and historicalTeleport then
+            remoteBringItem(item.Name)
+        else
+            bringItem(item.Name)
+        end
+    end)
+
+    table.insert(CardConnections, c1)
+    table.insert(CardConnections, c2)
+end
+buildItemList = function()
+    clearCards()
+
+    local results = filteredItems()
+    updateStats(#results)
+
+    if #results == 0 then
+        local Empty = Instance.new("TextLabel")
+        Empty.BackgroundTransparency = 1
+        Empty.Size = UDim2.new(1, -16, 0, 80)
+        Empty.Font = Enum.Font.GothamMedium
+        Empty.TextSize = 13
+        Empty.TextColor3 = theme().SubText
+        Empty.TextWrapped = true
+        Empty.Text = "No items match the current search/filter.\nTry clearing the search or changing the category."
+        Empty.Parent = ItemScroll
+        return
+    end
+
+    for order, entry in ipairs(results) do
+        createItemCard(entry, order)
+    end
+end
+
+rebuildCategories = function()
+    for _, child in ipairs(CategoryBar:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
+    end
+
+    for order, category in ipairs(getCategories()) do
+        local b = Instance.new("TextButton")
+        b.AutoButtonColor = false
+        b.BackgroundColor3 = State.Category == category and theme().Accent or theme().Button
+        b.BorderSizePixel = 0
+        b.Size = UDim2.fromOffset(math.max(72, TextService:GetTextSize(category, 12, Enum.Font.GothamMedium, Vector2.new(200, 30)).X + 28), 30)
+        b.Font = Enum.Font.GothamMedium
+        b.TextSize = 12
+        b.TextColor3 = theme().Text
+        b.Text = category
+        b.LayoutOrder = order
+        b.Parent = CategoryBar
+
+        local c = Instance.new("UICorner")
+        c.CornerRadius = UDim.new(0, 8)
+        c.Parent = b
+
+        b.MouseButton1Click:Connect(function()
+            State.Category = category
+            buildItemList()
+            rebuildCategories()
+        end)
+    end
+
+    task.defer(function()
+        CategoryBar.CanvasSize = UDim2.fromOffset(CategoryList.AbsoluteContentSize.X + 4, 34)
+    end)
+end
+
+--==================================================
+-- BRING FUNCTIONS
+--==================================================
+
+bringItem = function(itemName)
+    if State.BringMethod == "Remote" then
+        return remoteBringItem(itemName)
+    end
+
+    local instance = findFirst(itemName)
+    if not instance then
+        notify("Not found: " .. itemName, "error")
+        return false
+    end
+
+    local ok, reason = moveInstance(instance)
+    if ok then
+        notify("Brought: " .. itemName, "success")
+        return true
+    end
+
+    notify("Failed: " .. itemName .. " • " .. tostring(reason), "error")
+    return false
+end
+
+bringAll = function()
+    if State.BringMethod == "Remote" then
+        return remoteBringAll()
+    end
+
+    local dataset = getDataset()
+    local used = {}
+    local successful = 0
+    local missing = 0
+    local failed = 0
+    local occurrenceNeeded = {}
+
+    -- Duplicate roster entries intentionally get their own chance to locate a distinct instance.
+    for _, item in ipairs(dataset) do
+        occurrenceNeeded[item.Name] = (occurrenceNeeded[item.Name] or 0) + 1
+        local matches = findMatches(item.Name)
+        local chosen
+        local seen = occurrenceNeeded[item.Name]
+        local count = 0
+
+        for _, candidate in ipairs(matches) do
+            if not used[candidate] then
+                count += 1
+                if count == 1 then
+                    chosen = candidate
+                end
+                if count >= seen then
+                    chosen = candidate
+                    break
+                end
+            end
+        end
+
+        if chosen then
+            local ok = moveInstance(chosen)
+            if ok then
+                used[chosen] = true
+                successful += 1
+            else
+                failed += 1
+            end
+        else
+            missing += 1
+        end
+    end
+
+    notify(string.format("Bring All complete • %d brought • %d missing • %d failed", successful, missing, failed), successful > 0 and "success" or "error")
+    refreshStatus()
+    return successful > 0
+end
+refreshStatus = function()
+    buildItemList()
+end
+
+--==================================================
+-- BUTTON STATE HELPERS
+--==================================================
+
+
+updateKeybindButtons = function()
+    for itemName, button in pairs(KeybindButtons) do
+        button.Text = "Key: " .. tostring(State.ItemKeys[itemName] or "None")
+    end
+end
+
+local function updateFilterButtons()
+    FavoritesFilter.Text = State.FavoritesOnly and "★ Favorites: ON" or "☆ Favorites"
+    SortButton.Text = State.SortAZ and "A-Z: ON" or "A-Z Sort"
+    FavoritesFilter.BackgroundColor3 = State.FavoritesOnly and theme().Accent or theme().Button
+    SortButton.BackgroundColor3 = State.SortAZ and theme().Accent or theme().Button
+
+    ThemeButton.Text = "Theme: " .. State.Theme
+    LiteButton.Text = "Lite Mode: " .. (State.LiteMode and "ON" or "OFF")
+    FavoritesOnlyButton.Text = "Favorites Only: " .. (State.FavoritesOnly and "ON" or "OFF")
+    SortSettingButton.Text = "Sorting: " .. (State.SortAZ and "A-Z" or "Original Order")
+    ModeSettingButton.Text = "Mode: " .. (State.Mode == "Ch2" and "Ch2 Hub" or "Granny Retro Hub")
+    LayoutModeButton.Text = "Layout Mode: " .. State.LayoutMode
+    BringMethodButton.Text = "Bring Method: " .. bringMethodLabel()
+    ScaleDown.Text = string.format("UI Scale: %d%%   [-]", math.floor(State.Scale * 100 + 0.5))
+    ScaleUp.Text = string.format("UI Scale: %d%%   [+]", math.floor(State.Scale * 100 + 0.5))
+end
+
+--==================================================
+-- THEME
+--==================================================
+
+applyTheme = function()
+    local t = theme()
+
+    Main.BackgroundColor3 = t.Background
+    MainStroke.Color = t.Stroke
+
+    Topbar.BackgroundColor3 = t.Panel
+    TopBottom.BackgroundColor3 = t.Panel
+    Title.TextColor3 = t.Text
+    Subtitle.TextColor3 = t.SubText
+
+    Sidebar.BackgroundColor3 = t.Panel
+    SearchBox.BackgroundColor3 = t.Panel
+    SearchBox.TextColor3 = t.Text
+    SearchBox.PlaceholderColor3 = t.SubText
+    SearchStroke.Color = t.Stroke
+    ClearSearch.BackgroundColor3 = t.Button
+    ClearSearch.TextColor3 = t.Text
+
+    ItemScroll.BackgroundColor3 = t.Panel
+    ItemScroll.ScrollBarImageColor3 = t.Accent
+    MainStroke.Color = t.Stroke
+
+    SettingsScroll.BackgroundColor3 = t.Panel
+    SettingsScroll.ScrollBarImageColor3 = t.Accent
+    AboutFrame.BackgroundColor3 = t.Panel
+    AboutFrame.ScrollBarImageColor3 = t.Accent
+    LegacyScroll.BackgroundColor3 = t.Panel
+    LegacyScroll.ScrollBarImageColor3 = t.Accent
+    LegacyDetails.BackgroundColor3 = t.Panel2
+    LegacyDetails.TextColor3 = t.Text
+
+    for _, b in ipairs(SideButtons) do
+        b.BackgroundColor3 = t.Button
+        b.TextColor3 = t.Text
+        local stroke = b:FindFirstChildOfClass("UIStroke")
+        if stroke then stroke.Color = t.Stroke end
+    end
+
+    for _, b in ipairs(LegacyButtons) do
+        b.BackgroundColor3 = (State.ChosenLegacy == (string.split(b.Text, "  •  ")[1] or "") and t.Accent or t.Button)
+        b.TextColor3 = t.Text
+        local stroke = b:FindFirstChildOfClass("UIStroke")
+        if stroke then stroke.Color = t.Stroke end
+    end
+
+    ModeButton.BackgroundColor3 = t.Button
+    ModeButton.TextColor3 = t.Text
+    MinButton.BackgroundColor3 = t.Button
+    MinButton.TextColor3 = t.Text
+    CloseButton.BackgroundColor3 = t.Button
+    CloseButton.TextColor3 = t.Text
+    ToggleButton.BackgroundColor3 = t.Button
+    ToggleButton.TextColor3 = t.Text
+
+    applyLayout()
+    updateFilterButtons()
+    rebuildCategories()
+    buildItemList()
+    if typeof(updateLegacyDetails) == "function" then
+        updateLegacyDetails()
+    end
+end
+
+--==================================================
+-- LAYOUT / LITE MODE / RESPONSIVE
+--==================================================
+
+applyLayout = function()
+    local camera = workspace.CurrentCamera
+    local viewport = camera and camera.ViewportSize or Vector2.new(1280, 720)
+    local mobile = State.LayoutMode == "Mobile" or (State.LayoutMode == "Auto" and UserInputService.TouchEnabled and viewport.X <= 900)
+
+    if isLegacyActive() then
+        Subtitle.Text = "HISTORICAL PREVIEW • " .. State.Version .. " • " .. (currentLegacyInfo().Recreation and "recreation" or "original")
+    elseif State.LiteMode then
+        Main.Size = mobile and UDim2.fromOffset(530, 510) or UDim2.fromOffset(620, 540)
+        Sidebar.Size = UDim2.fromOffset(112, 1)
+        Pages.Position = UDim2.new(0, 122, 0, 0)
+        Pages.Size = UDim2.new(1, -122, 1, 0)
+        Subtitle.Text = "Lite Mode • fast item hub"
+    else
+        Main.Size = mobile and UDim2.fromOffset(600, 560) or UDim2.fromOffset(720, 610)
+        Sidebar.Size = UDim2.fromOffset(132, 1)
+        Pages.Position = UDim2.new(0, 142, 0, 0)
+        Pages.Size = UDim2.new(1, -142, 1, 0)
+        Subtitle.Text = "Ultimate Edition • rebuilt single LocalScript"
+    end
+
+    Scale.Scale = State.Scale
+
+    if State.Minimized then
+        Main.Size = UDim2.fromOffset(math.min(Main.AbsoluteSize.X, 720), 58)
+        Content.Visible = false
+    else
+        Content.Visible = true
+    end
+
+    if State.Position then
+        Main.Position = State.Position
+    end
+end
+
+local function setVisible(value)
+    State.Visible = value
+    Main.Visible = value
+    if value then
+        notify("Hub opened", "success")
+    end
+end
+
+local function toggleVisible()
+    setVisible(not State.Visible)
+end
+
+--==================================================
+-- PAGES
+--==================================================
+
+showPage = function(page)
+    MainPage.Visible = page == "Items"
+    SettingsPage.Visible = page == "Settings"
+    AboutPage.Visible = page == "About"
+    LegacyPage.Visible = page == "Legacy"
+
+    for _, button in ipairs(SideButtons) do
+        button.BackgroundColor3 = theme().Button
+    end
+
+    if page == "Items" then
+        ItemsNav.BackgroundColor3 = theme().Accent
+    elseif page == "Settings" then
+        SettingsNav.BackgroundColor3 = theme().Accent
+    elseif page == "About" then
+        AboutNav.BackgroundColor3 = theme().Accent
+    elseif page == "Legacy" then
+        LegacyNav.BackgroundColor3 = theme().Accent
+    end
+end
+
+--==================================================
+-- DRAGGING
+--==================================================
+
+local dragging = false
+local dragStart
+local startPosition
+
+local function beginDrag(input)
+    dragging = true
+    dragStart = input.Position
+    startPosition = Main.Position
+end
+
+local function updateDrag(input)
+    if not dragging then return end
+
+    local delta = input.Position - dragStart
+    Main.Position = UDim2.new(
+        startPosition.X.Scale,
+        startPosition.X.Offset + delta.X,
+        startPosition.Y.Scale,
+        startPosition.Y.Offset + delta.Y
+    )
+    State.Position = Main.Position
+end
+
+Topbar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        beginDrag(input)
+    end
+end)
+
+table.insert(Connections, UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        updateDrag(input)
+    end
+end))
+
+table.insert(Connections, UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+        State.Position = Main.Position
+        saveSession()
+    end
+end))
+
+--==================================================
+-- TOPBAR BUTTONS
+--==================================================
+
+switchMode = function()
+    if ActiveLegacyScript and ActiveLegacyScript.Parent then
+        pcall(function() ActiveLegacyScript.Disabled = true end)
+    end
+    ActiveLegacyScript = nil
+    Main.Visible = true
+    State.Visible = true
+    State.Mode = State.Mode == "Ch2" and "Granny" or "Ch2"
+    State.Search = ""
+    State.Category = "All"
+    State.FavoritesOnly = false
+    SearchBox.Text = ""
+    State.LegacyPreview = false
+    State.Version = "Ultimate"
+    ModeButton.Text = State.Mode == "Ch2" and "CH2" or "GRANNY RETRO"
+    Title.Text = State.Mode == "Ch2" and "🧰 Ch2 Hub Ultimate" or "🕯 GRANNY RETRO HUB"
+    notify("Switched to " .. (State.Mode == "Ch2" and "Ch2 Hub" or "GRANNY RETRO HUB"), "success")
+    rebuildCategories()
+    buildItemList()
+    updateFilterButtons()
+    saveSession()
+end
+
+ModeButton.MouseButton1Click:Connect(switchMode)
+
+MinButton.MouseButton1Click:Connect(function()
+    State.Minimized = not State.Minimized
+    MinButton.Text = State.Minimized and "+" or "—"
+    applyLayout()
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    setVisible(false)
+end)
+
+ToggleButton.MouseButton1Click:Connect(function()
+    toggleVisible()
+end)
+
+--==================================================
+-- NAVIGATION BUTTONS
+--==================================================
+
+ItemsNav.MouseButton1Click:Connect(function()
+    showPage("Items")
+end)
+
+SettingsNav.MouseButton1Click:Connect(function()
+    showPage("Settings")
+end)
+
+AboutNav.MouseButton1Click:Connect(function()
+    showPage("About")
+end)
+
+LegacyNav.MouseButton1Click:Connect(function()
+    showPage("Legacy")
+end)
+
+RefreshNav.MouseButton1Click:Connect(function()
+    refreshStatus()
+    notify("Item status refreshed", "success")
+end)
+
+HideNav.MouseButton1Click:Connect(function()
+    toggleVisible()
+end)
+
+--==================================================
+-- SEARCH / FILTERS
+--==================================================
+
+SearchBox:GetPropertyChangedSignal("Text"):Connect(function()
+    State.Search = SearchBox.Text
+    buildItemList()
+end)
+
+ClearSearch.MouseButton1Click:Connect(function()
+    SearchBox.Text = ""
+    State.Search = ""
+    buildItemList()
+    pcall(function() SearchBox:CaptureFocus() end)
+end)
+
+FavoritesFilter.MouseButton1Click:Connect(function()
+    State.FavoritesOnly = not State.FavoritesOnly
+    updateFilterButtons()
+    buildItemList()
+end)
+
+SortButton.MouseButton1Click:Connect(function()
+    State.SortAZ = not State.SortAZ
+    saveSession()
+    updateFilterButtons()
+    buildItemList()
+end)
+
+BringAllButton.MouseButton1Click:Connect(function()
+    bringAll()
+end)
+
+RefreshItemsButton.MouseButton1Click:Connect(function()
+    refreshStatus()
+    notify("Item status refreshed", "success")
+end)
+
+--==================================================
+-- SETTINGS ACTIONS
+--==================================================
+
+ThemeButton.MouseButton1Click:Connect(function()
+    local currentIndex = 1
+    for i, name in ipairs(THEME_ORDER) do
+        if name == State.Theme then
+            currentIndex = i
+            break
+        end
+    end
+
+    currentIndex += 1
+    if currentIndex > #THEME_ORDER then
+        currentIndex = 1
+    end
+
+    State.Theme = THEME_ORDER[currentIndex]
+    saveSession()
+    applyTheme()
+    notify("Theme changed to " .. State.Theme, "success")
+end)
+
+local function clampScale(value)
+    return math.clamp(math.floor(value * 20 + 0.5) / 20, 0.75, 1.25)
+end
+
+ScaleDown.MouseButton1Click:Connect(function()
+    State.Scale = clampScale(State.Scale - 0.05)
+    saveSession()
+    updateFilterButtons()
+    applyLayout()
+end)
+
+ScaleUp.MouseButton1Click:Connect(function()
+    State.Scale = clampScale(State.Scale + 0.05)
+    saveSession()
+    updateFilterButtons()
+    applyLayout()
+end)
+
+LiteButton.MouseButton1Click:Connect(function()
+    State.LiteMode = not State.LiteMode
+    saveSession()
+    updateFilterButtons()
+    applyLayout()
+    buildItemList()
+    notify("Lite Mode " .. (State.LiteMode and "enabled" or "disabled"), "success")
+end)
+
+FavoritesOnlyButton.MouseButton1Click:Connect(function()
+    State.FavoritesOnly = not State.FavoritesOnly
+    saveSession()
+    updateFilterButtons()
+    buildItemList()
+    showPage("Items")
+end)
+
+SortSettingButton.MouseButton1Click:Connect(function()
+    State.SortAZ = not State.SortAZ
+    saveSession()
+    updateFilterButtons()
+    buildItemList()
+end)
+
+BringMethodButton.MouseButton1Click:Connect(function()
+    State.BringMethod = State.BringMethod == "Local" and "Remote" or "Local"
+    saveSession()
+    updateFilterButtons()
+    buildItemList()
+    notify("Bring method: " .. bringMethodLabel(), "success")
+end)
+
+ControlsButton.MouseButton1Click:Connect(function()
+    local controls = State.Mode == "Ch2"
+        and "Controls\n\nL = Toggle Hub\nG = Bring All\nR = Switch CH2 Hub / GRANNY RETRO HUB\n1 / 2 / 3 / 4 / 5 / 7 / 8 / 9 / 0 / Y / U = individual Ch2 items\n\nGRANNY RETRO HUB uses G, L and R only."
+        or "Controls\n\nL = Toggle Hub\nG = Bring All\nR = Switch CH2 Hub / GRANNY RETRO HUB\n\nNo individual GRANNY RETRO HUB item keybinds are used."
+
+    notify(controls, "success")
+end)
+
+RefreshSettings.MouseButton1Click:Connect(function()
+    refreshStatus()
+    notify("Item status refreshed", "success")
+end)
+
+ResetButton.MouseButton1Click:Connect(function()
+    State.Scale = 1
+    State.LayoutMode = "Auto"
+    State.Position = nil
+    pcall(function()
+        LocalPlayer:SetAttribute("Ch2Ultimate_PosX", nil)
+        LocalPlayer:SetAttribute("Ch2Ultimate_PosY", nil)
+    end)
+    State.Minimized = false
+    MinButton.Text = "—"
+    Main.Position = UDim2.fromScale(0.5, 0.5)
+    saveSession()
+    applyLayout()
+    notify("UI position, size and scale reset", "success")
+end)
+
+ModeSettingButton.MouseButton1Click:Connect(function()
+    switchMode()
+end)
+
+LayoutModeButton.MouseButton1Click:Connect(function()
+    if State.LayoutMode == "Auto" then
+        State.LayoutMode = "Mobile"
+    elseif State.LayoutMode == "Mobile" then
+        State.LayoutMode = "Desktop"
+    else
+        State.LayoutMode = "Auto"
+    end
+    updateFilterButtons()
+    applyLayout()
+    saveSession()
+    notify("Layout mode: " .. State.LayoutMode, "success")
+end)
+
+LegacySettingButton.MouseButton1Click:Connect(function()
+    showPage("Legacy")
+end)
+
+--==================================================
+-- GLOBAL KEYBINDS
+--==================================================
+
+local function keyPressed(keyCode)
+    if isTextBoxFocused() then
+        return
+    end
+
+    if keyCode == Enum.KeyCode.L then
+        toggleVisible()
+        return
+    end
+
+    if keyCode == Enum.KeyCode.G then
+        bringAll()
+        return
+    end
+    if keyCode == Enum.KeyCode.R then
+        if isLegacyActive() then
+            restoreUltimate()
+        else
+            switchMode()
+        end
+        return
+    end
+
+    if not State.Visible then
+        return
+    end
+
+    local info = currentLegacyInfo()
+    if isLegacyActive() and not info.Keybinds then
+        return
+    end
+
+    if State.Mode ~= "Ch2" then
+        return
+    end
+
+    if keyCode == Enum.KeyCode.Slash then
+        pcall(function() SearchBox:CaptureFocus() end)
+        return
+    end
+
+    local itemName = State.Keybinds[keyCode.Name]
+    if itemName then
+        bringItem(itemName)
+    end
+end
+
+table.insert(Connections, UserInputService.InputBegan:Connect(function(input)
+    -- Do not check gameProcessed for keyboard: CoreGui marks our keys as processed
+    if input.UserInputType ~= Enum.UserInputType.Keyboard then
+        return
+    end
+
+    keyPressed(input.KeyCode)
+end))
+
+--==================================================
+-- CHARACTER / RESIZE EVENTS
+--==================================================
+
+LocalPlayer.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    notify("Character ready", "success")
+end)
+
+local function handleViewport()
+    if Main.Parent then
+        applyLayout()
+    end
+end
+
+if workspace.CurrentCamera then
+    table.insert(Connections, workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(handleViewport))
+end
+
+--==================================================
+-- LEGACY / VERSION DISPLAY HELPERS
+--==================================================
+
+local function setUltimateTitle()
+    if State.Mode == "Ch2" then
+        Title.Text = "🧰 Ch2 Hub Ultimate"
+        ModeButton.Text = "CH2"
+    else
+        Title.Text = "🕯 GRANNY RETRO HUB"
+        ModeButton.Text = "GRANNY RETRO"
+    end
+end
+
+--==================================================
+-- STARTUP
+--==================================================
+
+setUltimateTitle()
+showPage("Items")
+updateFilterButtons()
+rebuildCategories()
+applyLayout()
+buildItemList()
+
+notify("Ch2 Hub Ultimate loaded", "success")
+notify("L = Toggle Hub • G = Bring All", "success")
+notify("Bring Method: " .. bringMethodLabel(), "success")
+
+--==================================================
+-- CLEANUP HOOK
+--==================================================
+
+ScreenGui.Destroying:Connect(function()
+    if ActiveLegacyScript and ActiveLegacyScript.Parent then
+        pcall(function() ActiveLegacyScript.Disabled = true end)
+    end
+    disconnectAll(Connections)
+    disconnectAll(CardConnections)
+end)
